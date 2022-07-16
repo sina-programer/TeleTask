@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request, make_response
-import datetime as dt
 
-import config
+import bot
 
 
 app = Flask(__name__)
+
 
 @app.route('/', methods=['GET'])
 def home():
@@ -12,7 +12,7 @@ def home():
 
 
 @app.route('/create', methods=['GET', 'POST'])
-def create_ch_group():
+def create():
     request_data = request.get_json()
 
     if 'task_type' not in request_data:
@@ -21,7 +21,7 @@ def create_ch_group():
     task_type = int(request_data['task_type'])
 
     if request.method == 'POST':
-        if task_type == 1:
+        if task_type == 1:  # create channel
             if 'username' not in request_data:
                 return jsonify({'message': 'username can not be empty'})
 
@@ -45,20 +45,14 @@ def create_ch_group():
             if len(channel_title) == 0:
                 return jsonify({"message": 'channel_title can not be an empty string'})
 
-            inserted_id = config.actions_collection.insert_one({
-                "username": username,
-                "phone_number": phone_number,
-                "channel_title": channel_title,
-                "channel_bio": channel_bio,
-                'type': task_type,
-                'status': 'waiting',
-                'insert_date': dt.datetime.now()
-            }).inserted_id
 
-            if inserted_id:
+            channel_id = bot.create_channel(request_data)
+
+            if channel_id:
                 response = make_response(
                     jsonify({
                         "message": '201 Channel created',
+                        "channel_id": channel_id,
                         "severity": "info"
                         }),
                     201
@@ -73,7 +67,7 @@ def create_ch_group():
                     500
                 )
 
-        if task_type == 2:
+        if task_type == 2:  # create group
             if 'group_title' not in request_data:
                 return jsonify({"message": 'Group title can not be empty'})
 
@@ -97,21 +91,15 @@ def create_ch_group():
             if len(group_title) == 0:
                 return jsonify({"message": 'group_title can not be an empty string'})
 
-            inserted_id = config.actions_collection.insert_one({
-                "username": username,
-                "phone_number": phone_number,
-                "group_title": group_title,
-                "group_bio": group_bio,
-                'status': 'waiting',
-                'type': task_type,
-                'insert_date': dt.datetime.now()
-            }).inserted_id
 
-            if inserted_id:
+            group_id = bot.create_group(request_data)
+
+            if group_id:
                 response = make_response(
                     jsonify({
                         "message": '201 Group created',
-                        "severity": "danger"
+                        "group_id": group_id,
+                        "severity": "info"
                         }),
                     201
                 )
@@ -125,7 +113,7 @@ def create_ch_group():
                     500
                 )
 
-        if task_type == 3:
+        if task_type == 3:  # create both
             if 'group_title' not in request_data:
                 return jsonify({"message": 'group_title can not be empty'})
 
@@ -157,23 +145,16 @@ def create_ch_group():
             if len(channel_title) == 0:
                 return jsonify({"message": 'channel_title can not be an empty string'})
 
-            inserted_id = config.actions_collection.insert_one({
-                "username": username,
-                "phone_number": phone_number,
-                "group_title": group_title,
-                "group_bio": group_bio,
-                "channel_title": channel_title,
-                "channel_bio": channel_bio,
-                'status': 'waiting',
-                'type': task_type,
-                'insert_date': dt.datetime.now()
-            }).inserted_id
 
-            if inserted_id:
+            channel_id, group_id = bot.create_both(request_data)
+
+            if channel_id or group_id:
                 response = make_response(
                     jsonify({
                         "message": '201 Channel and Group created',
-                        "severity": "danger"
+                        "channel_id": channel_id,
+                        "group_id": group_id,
+                        "severity": "info"
                         }),
                     201
                 )
@@ -198,8 +179,8 @@ def create_ch_group():
 def add_user():
     request_data = request.get_json()
 
-    # if ('channel_id' not in request_data) and ('group_id' not in request_data):
-    #     return jsonify({'message': 'Enter a channel id or group id'})
+    if ('channel_id' not in request_data) and ('group_id' not in request_data):
+        return jsonify({'message': 'Please enter a channel/group id'})
 
     if request.method == 'POST':
         if 'username' not in request_data:
@@ -222,20 +203,13 @@ def add_user():
         if len(group_id) == 0 and len(channel_id) == 0:
             return jsonify({"message": 'You must at least enter one id/channel or group'})
 
-        inserted_id = config.actions_collection.insert_one({
-            "username": username,
-            "phone_number": phone_number,
-            "group_id": group_id,
-            "channel_id": channel_id,
-            'type': 4,
-            'status': 'waiting',
-            'insert_date': dt.datetime.now()
-        }).inserted_id
+        added_ids = bot.add_user(request_data)
 
-        if inserted_id:
+        if added_ids:
             response = make_response(
                 jsonify({
                     "message": '200 user added',
+                    "added_ids": added_ids,
                     "severity": "info"
                     }),
                 200
