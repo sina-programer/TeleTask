@@ -1,7 +1,14 @@
-from utils import *
-
+from telethon.tl.functions.channels import CreateChannelRequest, CheckUsernameRequest, UpdateUsernameRequest, InviteToChannelRequest
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError
+from telethon.tl.functions.messages import AddChatUserRequest
+from telethon.tl.types import InputChannel, InputPeerChannel
+from telethon import TelegramClient, events, sync
+import datetime as dt
 import logging
+import time
+
+import config
+
 
 logging.basicConfig(
     format='%(asctime)s - %(lineno)d - %(levelname)s - %(message)s',
@@ -9,19 +16,20 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
-# with TelegramClient('teletask', api_id, api_hash) as clinet :
-#    client.send_message('tiyea', "run")
-
-client = TelegramClient('teletask', api_id, api_hash)
+client = TelegramClient(
+    session=config.session_name,
+    api_id=config.api_id,
+    api_hash=config.api_hash
+)
 client.start()
-a = client.is_user_authorized()
-logging.debug(f'user is authorized: {a}')
+
+logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
 
 while True:
     time.sleep(5)
 
-    newest_action = list(actions_collection.find({'status': 'waiting'}))
+    newest_action = list(config.actions_collection.find({'status': 'waiting'}))
     logging.debug(f'length of newest_action {len(newest_action)}')
 
     for action in newest_action:
@@ -40,13 +48,13 @@ while True:
                 channel_id = createdChannel.__dict__["chats"][0].__dict__["id"]
                 client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
                 client.edit_admin(channel_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
-                actions_collection.update_one(
+                config.actions_collection.update_one(
                     {'_id': action['_id']},
                     {
                         '$set': {
                             'status': 'done',
                             'channel_id': channel_id,
-                            'doneTime': datetime.now()
+                            'doneTime': dt.datetime.now()
                         }
                     }
                 )
@@ -80,13 +88,13 @@ while True:
 
                 client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
                 client.edit_admin(group_id, user_to_add, is_admin=True, add_admins=False)
-                actions_collection.update_one(
+                config.actions_collection.update_one(
                     {'_id': action['_id']},
                     {
                         '$set': {
                             'status': 'done',
                             'group_id': group_id,
-                            'doneTime': datetime.now()
+                            'doneTime': dt.datetime.now()
                             }
                     }
                 )
@@ -126,16 +134,16 @@ while True:
                 client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
                 client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
 
-                actions_collection.update_one({'_id': action['_id']}, {'$set': {'status': 'done', 'channel_id': channel_id}})
+                config.actions_collection.update_one({'_id': action['_id']}, {'$set': {'status': 'done', 'channel_id': channel_id}})
                 client.edit_admin(channel_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
                 client.edit_admin(group_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
-                actions_collection.update_one(
+                config.actions_collection.update_one(
                     {'_id': action['_id']},
                     {
                         '$set': {
                             'status': 'done',
                             'group_id': group_id,
-                            'doneTime': datetime.now()
+                            'doneTime': dt.datetime.now()
                             }
                     }
                 )
@@ -159,14 +167,14 @@ while True:
             group_id = createdGroup.__dict__["chats"][0].__dict__["id"]
             client(InviteToChannelRequest(channel=channel_id, users=[username]))
             client(InviteToChannelRequest(channel=group_id, users=[username]))
-            actions_collection.update_one(
+            config.actions_collection.update_one(
                 {'_id': action['_id']},
                 {
                     '$set': {
                         'status': 'done',
                         'channel_id': channel_id,
                         'group_id': group_id,
-                        'doneTime': datetime.now()
+                        'doneTime': dt.datetime.now()
                         }
                 }
             )
@@ -186,12 +194,12 @@ while True:
 
                 if group_id:
                     client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
-                    actions_collection.update_one(
+                    config.actions_collection.update_one(
                         {'_id': action['_id']},
                         {
                             '$set': {
                                 'status': 'done',
-                                'doneTime': datetime.now()
+                                'doneTime': dt.datetime.now()
                                 }
                         }
                     )

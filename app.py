@@ -1,5 +1,10 @@
-from utils import *
+from flask import Flask, jsonify, request, make_response
+import datetime as dt
 
+import config
+
+
+app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
@@ -9,7 +14,6 @@ def home():
 @app.route('/create', methods=['GET', 'POST'])
 def create_ch_group():
     request_data = request.get_json()
-    return jsonify('ok')
 
     if 'task_type' not in request_data:
         return jsonify({'message': 'Task type can not be empty'})
@@ -41,14 +45,14 @@ def create_ch_group():
             if len(channel_title) == 0:
                 return jsonify({"message": 'channel_title can not be an empty string'})
 
-            inserted_id = actions_collection.insert_one({
+            inserted_id = config.actions_collection.insert_one({
                 "username": username,
                 "phone_number": phone_number,
                 "channel_title": channel_title,
                 "channel_bio": channel_bio,
                 'type': task_type,
                 'status': 'waiting',
-                'insert_date': datetime.now()
+                'insert_date': dt.datetime.now()
             }).inserted_id
 
             if inserted_id:
@@ -93,14 +97,14 @@ def create_ch_group():
             if len(group_title) == 0:
                 return jsonify({"message": 'group_title can not be an empty string'})
 
-            inserted_id = actions_collection.insert_one({
+            inserted_id = config.actions_collection.insert_one({
                 "username": username,
                 "phone_number": phone_number,
                 "group_title": group_title,
                 "group_bio": group_bio,
                 'status': 'waiting',
                 'type': task_type,
-                'insert_date': datetime.now()
+                'insert_date': dt.datetime.now()
             }).inserted_id
 
             if inserted_id:
@@ -153,7 +157,7 @@ def create_ch_group():
             if len(channel_title) == 0:
                 return jsonify({"message": 'channel_title can not be an empty string'})
 
-            inserted_id = actions_collection.insert_one({
+            inserted_id = config.actions_collection.insert_one({
                 "username": username,
                 "phone_number": phone_number,
                 "group_title": group_title,
@@ -162,7 +166,7 @@ def create_ch_group():
                 "channel_bio": channel_bio,
                 'status': 'waiting',
                 'type': task_type,
-                'insert_date': datetime.now()
+                'insert_date': dt.datetime.now()
             }).inserted_id
 
             if inserted_id:
@@ -218,14 +222,14 @@ def add_user():
         if len(group_id) == 0 and len(channel_id) == 0:
             return jsonify({"message": 'You must at least enter one id/channel or group'})
 
-        inserted_id = actions_collection.insert_one({
+        inserted_id = config.actions_collection.insert_one({
             "username": username,
             "phone_number": phone_number,
             "group_id": group_id,
             "channel_id": channel_id,
             'type': 4,
             'status': 'waiting',
-            'insert_date': datetime.now()
+            'insert_date': dt.datetime.now()
         }).inserted_id
 
         if inserted_id:
