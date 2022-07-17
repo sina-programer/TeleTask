@@ -98,51 +98,20 @@ def create_both(data):
         client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
         client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
 
-        config.actions_collection.update_one({'_id': data['_id']},
-                                             {'$set': {'status': 'done', 'channel_id': channel_id}})
         client.edit_admin(channel_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
         client.edit_admin(group_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
-        config.actions_collection.update_one(
-            {'_id': data['_id']},
-            {
-                '$set': {
-                    'status': 'done',
-                    'group_id': group_id,
-                    'doneTime': dt.datetime.now()
-                }
-            }
-        )
 
-        logging.info("Waiting 60 Seconds...")
-        time.sleep(60)
+        return channel_id, group_id
 
-    except PeerFloodError as fex:
-        logging.exception(
-            "Getting Flood Error from telegram. Script is stopping now. Please try again after some time."
-        )
+    except PeerFloodError:
+        logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
         time.sleep(900)
 
     except UserPrivacyRestrictedError:
         logging.exception("The user's privacy settings do not allow you to do this. Skipping.")
 
-    except Exception as ex:
+    except Exception:
         logging.exception("Unexpected Error")
-
-    channel_id = createdChannel.__dict__["chats"][0].__dict__["id"]
-    group_id = createdGroup.__dict__["chats"][0].__dict__["id"]
-    client(InviteToChannelRequest(channel=channel_id, users=[username]))
-    client(InviteToChannelRequest(channel=group_id, users=[username]))
-    config.actions_collection.update_one(
-        {'_id': data['_id']},
-        {
-            '$set': {
-                'status': 'done',
-                'channel_id': channel_id,
-                'group_id': group_id,
-                'doneTime': dt.datetime.now()
-            }
-        }
-    )
 
 
 def add_user(data):
