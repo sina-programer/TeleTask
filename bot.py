@@ -7,8 +7,10 @@ import datetime as dt
 import logging
 import time
 
-import config
+import configparser
 
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 logging.basicConfig(
     format='%(asctime)s - %(lineno)d - %(levelname)s - %(message)s',
@@ -17,9 +19,9 @@ logging.basicConfig(
 )
 
 client = TelegramClient(
-    session=config.session_name,
-    api_id=config.api_id,
-    api_hash=config.api_hash
+    session=config['Bot']['session_name'],
+    api_id=int(config['Bot']['api_id']),
+    api_hash=config['Bot']['api_hash']
 )
 client.start()
 
