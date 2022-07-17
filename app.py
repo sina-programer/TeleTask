@@ -4,8 +4,20 @@ import bot
 
 
 def check_attributes(data: dict, attrs):
+    """
+    This function check that all necessary attributes there are in data
+
+    NOTE: if you want to check that there are at least one of some attrs, you can send they in a list.  for example:
+    check_attributes(data, ['first_necessary', ['second_optional1', 'second_optional2'], 'third_necessary'])
+    but, must there is at least one of ['second_optional1', 'second_optional2']
+    """
+
     for attr in attrs:
-        if not data.get(attr, None):
+        if isinstance(attr, list):  # if <attr> is a list, existing one of them is enough
+            if all(not data.get(a, None) for a in attr):
+                return jsonify({'message': f"you have to enter at least one of {attr}"})
+
+        elif not data.get(attr, None):
             return jsonify({'message': f"{attr} is invalid"})
 
 
@@ -117,21 +129,11 @@ def create():
 def add_user():
     request_data = request.get_json()
 
-    if ('channel_id' not in request_data) and ('group_id' not in request_data):
-        return jsonify({'message': 'Please enter a channel/group id'})
+    if result := check_attributes(request_data, ['username', 'phone_number', ['channel_id', 'group_id']]):
+        return result
 
 
     if request.method == 'POST':
-
-        if result := check_attributes(request_data, ['username', 'phone_number']):
-            return result
-
-        group_id = int(request_data['group_id']) if 'group_id' in request_data else 0
-        channel_id = int(request_data['channel_id']) if 'channel_id' in request_data else 0
-
-        if group_id == 0 and channel_id == 0:
-            return jsonify({"message": 'You must at least enter one id/channel or group'})
-
         added_ids = bot.add_user(request_data)
 
         if added_ids:
