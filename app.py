@@ -38,7 +38,7 @@ def create():
                 response = make_response(
                     jsonify({
                         "message": '201 Channel created',
-                        "channel_id": channel_id,
+                        "channel_id": str(channel_id),
                         "severity": "info"
                         }),
                     201
@@ -64,7 +64,7 @@ def create():
                 response = make_response(
                     jsonify({
                         "message": '201 Group created',
-                        "group_id": group_id,
+                        "group_id": str(group_id),
                         "severity": "info"
                         }),
                     201
@@ -90,8 +90,8 @@ def create():
                 response = make_response(
                     jsonify({
                         "message": '201 Channel and Group created',
-                        "channel_id": channel_id,
-                        "group_id": group_id,
+                        "channel_id": str(channel_id),
+                        "group_id": str(group_id),
                         "severity": "info"
                         }),
                     201
@@ -138,7 +138,7 @@ def add_user():
             response = make_response(
                 jsonify({
                     "message": '200 user added',
-                    "added_ids": added_ids,
+                    "added_ids": str(added_ids),
                     "severity": "info"
                     }),
                 200
