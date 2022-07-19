@@ -124,17 +124,17 @@ def add_user(data):
     try:
         username = action_username  # if action_username.startswith('@') else '@'+action_username
         user_to_add = client.get_entity(username)
-        added_ids = []
+        added_chat_ids = {}
 
         if channel_id:
             client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
-            added_ids.append(channel_id)
+            added_chat_ids['channel'] = channel_id
 
         if group_id:
             client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
-            added_ids.append(group_id)
+            added_chat_ids['group'] = group_id
 
-        return added_ids
+        return added_chat_ids
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")

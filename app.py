@@ -134,28 +134,26 @@ def add_user():
         return result
 
 
-    added_ids = bot.add_user(request.args)
+    added_chat_ids = bot.add_user(request.args)
 
-    if added_ids:
-        response = make_response(
+    if added_chat_ids:
+        return make_response(
             jsonify({
                 "message": '200 user added',
-                "added_ids": str(added_ids),
+                "added_chat_ids": str(added_chat_ids),
                 "severity": "info"
                 }),
             200
         )
 
     else:
-        response = make_response(
+        return make_response(
             jsonify({
                 "message": '500 User Could Not Be Added',
                 "severity": "danger"
                 }),
             500
         )
-
-    return response
 
 
 
