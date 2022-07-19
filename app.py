@@ -31,10 +31,18 @@ def home():
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
-    if 'task_type' not in request.args:
-        return jsonify({'message': 'Task type can not be empty'})
+    task_type = request.args.get('task_type', None)
 
-    task_type = int(request.args['task_type'])
+    if task_type:
+        try:
+            task_type = int(task_type)
+
+        except Exception:
+            return jsonify({'message': 'Task type is not an integer!'})
+
+    else:
+        return jsonify({'message': 'Please enter task type!'})
+
 
     if request.method == 'POST':
         if task_type == 1:  # create channel
