@@ -31,20 +31,18 @@ def home():
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
-    request_data = request.get_json()
-
-    if 'task_type' not in request_data:
+    if 'task_type' not in request.args:
         return jsonify({'message': 'Task type can not be empty'})
 
-    task_type = int(request_data['task_type'])
+    task_type = int(request.args['task_type'])
 
     if request.method == 'POST':
         if task_type == 1:  # create channel
 
-            if result := check_attributes(request_data, ['username', 'phone_number', 'channel_title']):
+            if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
                 return result
 
-            channel_id = bot.create_channel(request_data)
+            channel_id = bot.create_channel(request.args)
 
             if channel_id:
                 response = make_response(
@@ -67,10 +65,10 @@ def create():
 
         if task_type == 2:  # create group
 
-            if result := check_attributes(request_data, ['username', 'phone_number', 'group_title']):
+            if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
                 return result
 
-            group_id = bot.create_group(request_data)
+            group_id = bot.create_group(request.args)
 
             if group_id:
                 response = make_response(
@@ -93,10 +91,10 @@ def create():
 
         if task_type == 3:  # create both
 
-            if result := check_attributes(request_data, ['username', 'phone_number', 'channel_title', 'group_title']):
+            if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
                 return result
 
-            channel_id, group_id = bot.create_both(request_data)
+            channel_id, group_id = bot.create_both(request.args)
 
             if channel_id or group_id:
                 response = make_response(
@@ -127,14 +125,12 @@ def create():
 
 @app.route("/add_user", methods=['GET', 'POST'])
 def add_user():
-    request_data = request.get_json()
-
-    if result := check_attributes(request_data, ['username', 'phone_number', ['channel_id', 'group_id']]):
+    if result := check_attributes(request.args, ['username', 'phone_number', ['channel_id', 'group_id']]):
         return result
 
 
     if request.method == 'POST':
-        added_ids = bot.add_user(request_data)
+        added_ids = bot.add_user(request.args)
 
         if added_ids:
             response = make_response(
