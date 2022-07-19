@@ -21,6 +21,85 @@ def check_attributes(data: dict, attrs):
             return jsonify({'message': f"{attr} is invalid"})
 
 
+def _create_channel():
+    if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
+        return result
+
+    channel_id = bot.create_channel(request.args)
+
+    if channel_id:
+        return make_response(
+            jsonify({
+                "message": '201 Channel created',
+                "channel_id": str(channel_id),
+                "severity": "info"
+            }),
+            201
+        )
+
+    else:
+        return make_response(
+            jsonify({
+                "message": '500 Channel not created',
+                "severity": "danger"
+            }),
+            500
+        )
+
+
+def _create_group():
+    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
+        return result
+
+    group_id = bot.create_group(request.args)
+
+    if group_id:
+        return make_response(
+            jsonify({
+                "message": '201 Group created',
+                "group_id": str(group_id),
+                "severity": "info"
+            }),
+            201
+        )
+
+    else:
+        return make_response(
+            jsonify({
+                "message": '500 Group Not Created',
+                "severity": "danger"
+            }),
+            500
+        )
+
+
+def _create_both():
+    if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
+        return result
+
+    channel_id, group_id = bot.create_both(request.args)
+
+    if channel_id or group_id:
+        return make_response(
+            jsonify({
+                "message": '201 Channel and Group created',
+                "channel_id": str(channel_id),
+                "group_id": str(group_id),
+                "severity": "info"
+            }),
+            201
+        )
+
+    else:
+        return make_response(
+            jsonify({
+                "message": '500 Not Created',
+                "severity": "danger"
+            }),
+            500
+        )
+
+
 app = Flask(__name__)
 
 
@@ -32,98 +111,21 @@ def home():
 @app.route('/create', methods=['GET', 'POST'])
 def create():
     task_type = request.args.get('task_type', None)
-
-    if task_type:
-        try:
-            task_type = int(task_type)
-
-        except Exception:
-            return jsonify({'message': 'Task type is not an integer!'})
-
-    else:
+    if not task_type:
         return jsonify({'message': 'Please enter task type!'})
 
 
-    if task_type == 1:  # create channel
+    if task_type == '1':
+        return _create_channel()
 
-        if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
-            return result
+    elif task_type == '2':
+        return _create_group()
 
-        channel_id = bot.create_channel(request.args)
+    elif task_type == '3':
+        return _create_both()
 
-        if channel_id:
-            response = make_response(
-                jsonify({
-                    "message": '201 Channel created',
-                    "channel_id": str(channel_id),
-                    "severity": "info"
-                    }),
-                201
-            )
-
-        else:
-            response = make_response(
-                jsonify({
-                    "message": '500 Channel not created',
-                    "severity": "danger"
-                    }),
-                500
-            )
-
-    if task_type == 2:  # create group
-
-        if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
-            return result
-
-        group_id = bot.create_group(request.args)
-
-        if group_id:
-            response = make_response(
-                jsonify({
-                    "message": '201 Group created',
-                    "group_id": str(group_id),
-                    "severity": "info"
-                    }),
-                201
-            )
-
-        else:
-            response = make_response(
-                jsonify({
-                    "message": '500 Group Not Created',
-                    "severity": "danger"
-                    }),
-                500
-            )
-
-    if task_type == 3:  # create both
-
-        if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
-            return result
-
-        channel_id, group_id = bot.create_both(request.args)
-
-        if channel_id or group_id:
-            response = make_response(
-                jsonify({
-                    "message": '201 Channel and Group created',
-                    "channel_id": str(channel_id),
-                    "group_id": str(group_id),
-                    "severity": "info"
-                    }),
-                201
-            )
-
-        else:
-            response = make_response(
-                jsonify({
-                    "message": '500 Not Created',
-                    "severity": "danger"
-                    }),
-                500
-            )
-
-    return response
+    else:
+        return jsonify({"message": 'Please enter a valid task type!'})
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
