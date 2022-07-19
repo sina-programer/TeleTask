@@ -44,91 +44,86 @@ def create():
         return jsonify({'message': 'Please enter task type!'})
 
 
-    if request.method == 'POST':
-        if task_type == 1:  # create channel
+    if task_type == 1:  # create channel
 
-            if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
-                return result
+        if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
+            return result
 
-            channel_id = bot.create_channel(request.args)
+        channel_id = bot.create_channel(request.args)
 
-            if channel_id:
-                response = make_response(
-                    jsonify({
-                        "message": '201 Channel created',
-                        "channel_id": str(channel_id),
-                        "severity": "info"
-                        }),
-                    201
-                )
+        if channel_id:
+            response = make_response(
+                jsonify({
+                    "message": '201 Channel created',
+                    "channel_id": str(channel_id),
+                    "severity": "info"
+                    }),
+                201
+            )
 
-            else:
-                response = make_response(
-                    jsonify({
-                        "message": '500 Channel not created',
-                        "severity": "danger"
-                        }),
-                    500
-                )
+        else:
+            response = make_response(
+                jsonify({
+                    "message": '500 Channel not created',
+                    "severity": "danger"
+                    }),
+                500
+            )
 
-        if task_type == 2:  # create group
+    if task_type == 2:  # create group
 
-            if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
-                return result
+        if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
+            return result
 
-            group_id = bot.create_group(request.args)
+        group_id = bot.create_group(request.args)
 
-            if group_id:
-                response = make_response(
-                    jsonify({
-                        "message": '201 Group created',
-                        "group_id": str(group_id),
-                        "severity": "info"
-                        }),
-                    201
-                )
+        if group_id:
+            response = make_response(
+                jsonify({
+                    "message": '201 Group created',
+                    "group_id": str(group_id),
+                    "severity": "info"
+                    }),
+                201
+            )
 
-            else:
-                response = make_response(
-                    jsonify({
-                        "message": '500 Group Not Created',
-                        "severity": "danger"
-                        }),
-                    500
-                )
+        else:
+            response = make_response(
+                jsonify({
+                    "message": '500 Group Not Created',
+                    "severity": "danger"
+                    }),
+                500
+            )
 
-        if task_type == 3:  # create both
+    if task_type == 3:  # create both
 
-            if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
-                return result
+        if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
+            return result
 
-            channel_id, group_id = bot.create_both(request.args)
+        channel_id, group_id = bot.create_both(request.args)
 
-            if channel_id or group_id:
-                response = make_response(
-                    jsonify({
-                        "message": '201 Channel and Group created',
-                        "channel_id": str(channel_id),
-                        "group_id": str(group_id),
-                        "severity": "info"
-                        }),
-                    201
-                )
+        if channel_id or group_id:
+            response = make_response(
+                jsonify({
+                    "message": '201 Channel and Group created',
+                    "channel_id": str(channel_id),
+                    "group_id": str(group_id),
+                    "severity": "info"
+                    }),
+                201
+            )
 
-            else:
-                response = make_response(
-                    jsonify({
-                        "message": '500 Not Created',
-                        "severity": "danger"
-                        }),
-                    500
-                )
+        else:
+            response = make_response(
+                jsonify({
+                    "message": '500 Not Created',
+                    "severity": "danger"
+                    }),
+                500
+            )
 
-        return response
-
-
-    else:
-        return jsonify({'message': 'method not supported :('})
+    return response
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
@@ -137,33 +132,28 @@ def add_user():
         return result
 
 
-    if request.method == 'POST':
-        added_ids = bot.add_user(request.args)
+    added_ids = bot.add_user(request.args)
 
-        if added_ids:
-            response = make_response(
-                jsonify({
-                    "message": '200 user added',
-                    "added_ids": str(added_ids),
-                    "severity": "info"
-                    }),
-                200
-            )
-
-        else:
-            response = make_response(
-                jsonify({
-                    "message": '500 User Could Not Be Added',
-                    "severity": "danger"
-                    }),
-                500
-            )
-
-        return response
-
+    if added_ids:
+        response = make_response(
+            jsonify({
+                "message": '200 user added',
+                "added_ids": str(added_ids),
+                "severity": "info"
+                }),
+            200
+        )
 
     else:
-        return jsonify({'message': 'method not supported :('})
+        response = make_response(
+            jsonify({
+                "message": '500 User Could Not Be Added',
+                "severity": "danger"
+                }),
+            500
+        )
+
+    return response
 
 
 
