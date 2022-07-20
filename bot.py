@@ -34,7 +34,7 @@ def create_channel(query):
     try:
         user = client.get_input_entity(query.username)
 
-        channel = client(CreateChannelRequest(query.channel_title, query.channel_bio, megagroup=False))
+        channel = client(CreateChannelRequest(query.title, query.bio, megagroup=False))
         channel_id = channel.__dict__["chats"][0].__dict__["id"]
 
         client(InviteToChannelRequest(channel=channel_id, users=[user]))
@@ -60,7 +60,7 @@ def create_group(query):
     try:
         user = client.get_input_entity(query.username)
 
-        group = client(CreateChannelRequest(query.group_title, query.group_bio, megagroup=True))
+        group = client(CreateChannelRequest(query.title, query.bio, megagroup=True))
         group_id = group.__dict__["chats"][0].__dict__['id']
 
         client(InviteToChannelRequest(channel=group_id, users=[user]))
