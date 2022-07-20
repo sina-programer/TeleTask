@@ -7,6 +7,8 @@ import datetime as dt
 import logging
 import time
 
+from database import Query
+
 import configparser
 
 config = configparser.ConfigParser()
@@ -28,20 +30,17 @@ client.start()
 logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
 
-def create_channel(data):
-    action_username = data['username']
-    channel_title = data['channel_title']
-    channel_bio = data['channel_bio']
-
+def create_channel(query):
     try:
-        username = action_username  # if action_username.startswith('@') else '@'+action_username
-        user_to_add = client.get_input_entity(username)
-        createdChannel = client(CreateChannelRequest(channel_title, channel_bio, megagroup=False))
-        channel_id = createdChannel.__dict__["chats"][0].__dict__["id"]
-        client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
-        client.edit_admin(channel_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
+        user = client.get_input_entity(query.username)
 
-        return channel_id
+        channel = client(CreateChannelRequest(query.channel_title, query.channel_bio, megagroup=False))
+        channel_id = channel.__dict__["chats"][0].__dict__["id"]
+
+        client(InviteToChannelRequest(channel=channel_id, users=[user]))
+        client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
+
+        Query.update(id=channel_id, status='done').where(Query.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -53,22 +52,21 @@ def create_channel(data):
     except Exception:
         logging.exception(f"Unexpected Error")
 
+    finally:
+        Query.update(status='failed').where(Query.code == query.code, Query.status != 'done').execute()
 
-def create_group(data):
-    action_username = data['username']
-    group_title = data['group_title']
-    group_bio = data['group_bio']
-    username = action_username  # if action_username.startswith('@') else '@' + action_username
 
+def create_group(query):
     try:
-        user_to_add = client.get_input_entity(username)
-        createdGroup = client(CreateChannelRequest(group_title, group_bio, megagroup=True))
-        group_id = createdGroup.__dict__["chats"][0].__dict__["id"]
+        user = client.get_input_entity(query.username)
 
-        client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
-        client.edit_admin(group_id, user_to_add, is_admin=True, add_admins=False)
+        group = client(CreateChannelRequest(query.group_title, query.group_bio, megagroup=True))
+        group_id = group.__dict__["chats"][0].__dict__['id']
 
-        return group_id
+        client(InviteToChannelRequest(channel=group_id, users=[user]))
+        client.edit_admin(group_id, user, is_admin=True, add_admins=False)
+
+        Query.update(id=group_id, status='done').where(Query.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -80,40 +78,8 @@ def create_group(data):
     except Exception:
         logging.exception("Unexpected Error")
 
-
-def create_both(data):
-    action_username = data['username']
-    channel_title = data['channel_title']
-    channel_bio = data['channel_bio']
-    group_title = data['group_title']
-    group_bio = data['group_bio']
-
-    try:
-        username = action_username  # if action_username.startswith('@') else '@'+action_username
-        createdChannel = client(CreateChannelRequest(channel_title, channel_bio, megagroup=False))
-        createdGroup = client(CreateChannelRequest(group_title, group_bio, megagroup=True))
-        user_to_add = client.get_input_entity(username)
-
-        channel_id = createdChannel.__dict__["chats"][0].__dict__["id"]
-        group_id = createdGroup.__dict__["chats"][0].__dict__["id"]
-
-        client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
-        client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
-
-        client.edit_admin(channel_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
-        client.edit_admin(group_id, user_to_add, is_admin=True, add_admins=False, invite_users=False)
-
-        return channel_id, group_id
-
-    except PeerFloodError:
-        logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
-        time.sleep(900)
-
-    except UserPrivacyRestrictedError:
-        logging.exception("The user's privacy settings do not allow you to do this. Skipping.")
-
-    except Exception:
-        logging.exception("Unexpected Error")
+    finally:
+        Query.update(status='failed').where(Query.code == query.code, Query.status != 'done').execute()
 
 
 def add_user(data):
@@ -145,3 +111,17 @@ def add_user(data):
 
     except Exception:
         logging.exception("Unexpected Error")
+
+
+if __name__ == '__main__':
+    while True:
+        if (new_queries := Query.select().where(Query.status == 'pending')).exists():
+            for query in new_queries:
+                if query.task_type == 1:
+                    create_channel(query)
+
+                elif query.task_type == 2:
+                    create_group(query)
+
+
+        time.sleep(3)

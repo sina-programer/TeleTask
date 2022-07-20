@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request, make_response
+import datetime as dt
+import random
+import string
+import time
 
-import bot
+from database import Query
 
 
 def check_attributes(data: dict, attrs):
@@ -21,17 +25,45 @@ def check_attributes(data: dict, attrs):
             return jsonify({'message': f"{attr} is invalid"})
 
 
+def generate_code(length=8):
+    def _random_generate():
+        return ''.join(random.sample(string.ascii_letters, length))
+
+    code = _random_generate()
+    while Query.select().where(Query.code == code).exists():
+        code = _random_generate()
+
+    return code
+
+
 def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
         return result
 
-    channel_id = bot.create_channel(request.args)
+    code = generate_code()
 
-    if channel_id:
+    Query.create(
+        code=code,
+        username=request.args['username'],
+        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
+        task_type=request.args['task_type'],
+        title=request.args['channel_title'],
+        bio=request.args.get('channel_bio', ''),  # might there is not at all
+        id='',
+        status='pending',
+        datetime=dt.datetime.now()
+    )
+
+    while Query.select().where(Query.code == code, Query.status == 'pending').exists():  # wait until but create
+        time.sleep(3)
+
+    channel = Query.get(code=code)
+
+    if channel.status != 'failed':
         return make_response(
             jsonify({
                 "message": '201 Channel created',
-                "channel_id": str(channel_id),
+                "channel_id": channel.id,
                 "severity": "info"
             }),
             201
@@ -51,13 +83,30 @@ def _create_group():
     if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
         return result
 
-    group_id = bot.create_group(request.args)
+    code = generate_code()
 
-    if group_id:
+    Query.create(
+        code=code,
+        username=request.args['username'],
+        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
+        task_type=request.args['task_type'],
+        title=request.args['group_title'],
+        bio=request.args.get('group_bio', ''),  # might there is not at all
+        id='',
+        status='pending',
+        datetime=dt.datetime.now()
+    )
+
+    while Query.select().where(Query.code == code, Query.status == 'pending').exists():  # wait until but create
+        time.sleep(3)
+
+    group = Query.get(code=code)
+
+    if group.status != 'failed':
         return make_response(
             jsonify({
                 "message": '201 Group created',
-                "group_id": str(group_id),
+                "group_id": group.id,
                 "severity": "info"
             }),
             201
@@ -77,14 +126,47 @@ def _create_both():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'group_title']):
         return result
 
-    channel_id, group_id = bot.create_both(request.args)
+    group_code = generate_code()
+    channel_code = generate_code()
 
-    if channel_id or group_id:
+    Query.create(
+        code=channel_code,
+        username=request.args['username'],
+        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
+        task_type=1,
+        title=request.args['channel_title'],
+        bio=request.args.get('channel_bio', ''),  # might there is not at all
+        id='',
+        status='pending',
+        datetime=dt.datetime.now()
+    )
+
+    Query.create(
+        code=group_code,
+        username=request.args['username'],
+        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
+        task_type=2,
+        title=request.args['group_title'],
+        bio=request.args.get('group_bio', ''),  # might there is not at all
+        id='',
+        status='pending',
+        datetime=dt.datetime.now()
+    )
+
+    while Query.select().where(Query.code == group_code, Query.status == 'pending').exists():
+        time.sleep(3)
+    while Query.select().where(Query.code == channel_code, Query.status == 'pending').exists():  # wait until but create
+        time.sleep(3)
+
+    group = Query.get(code=group_code)
+    channel = Query.get(code=channel_code)
+
+    if group.status != 'failed' or channel.status != 'failed':
         return make_response(
             jsonify({
                 "message": '201 Channel and Group created',
-                "channel_id": str(channel_id),
-                "group_id": str(group_id),
+                "channel_id": channel.id,
+                "group_id": group.id,
                 "severity": "info"
             }),
             201

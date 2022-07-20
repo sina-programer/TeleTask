@@ -16,7 +16,7 @@ class Query(pw.Model):
     task_type = pw.IntegerField()
     title = pw.CharField()
     bio = pw.TextField()
-    id = pw.CharField()  # final created id for gap
+    id = pw.CharField()  # final created id of gap
     status = pw.CharField()
     datetime = pw.DateTimeField()  # created time
 
