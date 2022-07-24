@@ -62,9 +62,12 @@ def _create_channel():
     if channel.status != 'failed':
         return make_response(
             jsonify({
-                "message": '201 Channel created',
-                "channel_id": channel.id,
-                "severity": "info"
+                'task_type': channel.task_type,
+                'message': '201 Channel created',
+                'severity': "info",
+                'id': channel.id,
+                'title': channel.title,
+                'bio': channel.bio
             }),
             201
         )
@@ -105,9 +108,12 @@ def _create_group():
     if group.status != 'failed':
         return make_response(
             jsonify({
-                "message": '201 Group created',
-                "group_id": group.id,
-                "severity": "info"
+                'task_type': group.task_type,
+                'message': '201 Group created',
+                'severity': "info",
+                'id': group.id,
+                'title': group.title,
+                'bio': group.bio
             }),
             201
         )
