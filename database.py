@@ -17,6 +17,7 @@ class Gap(pw.Model):
     title = pw.CharField()
     bio = pw.TextField()
     id = pw.CharField()  # final created id of gap
+    link = pw.CharField()
     status = pw.CharField()
     datetime = pw.DateTimeField()  # created time
 

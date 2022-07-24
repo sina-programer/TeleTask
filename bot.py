@@ -36,11 +36,19 @@ def create_channel(query):
 
         channel = client(CreateChannelRequest(query.title, query.bio, megagroup=False))
         channel_id = channel.__dict__["chats"][0].__dict__["id"]
+        channel_link = client(
+            ExportChatInviteRequest(
+                peer=client.get_entity(channel_id),
+                legacy_revoke_permanent=True,
+                expire_date=None,
+                usage_limit=1
+            )
+        ).link
 
         client(InviteToChannelRequest(channel=channel_id, users=[user]))
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
-        Gap.update(id=channel_id, status='done').where(Gap.code == query.code).execute()
+        Gap.update(id=channel_id, link=channel_link, status='done').where(Gap.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -62,11 +70,19 @@ def create_group(query):
 
         group = client(CreateChannelRequest(query.title, query.bio, megagroup=True))
         group_id = group.__dict__["chats"][0].__dict__['id']
+        group_link = client(
+            ExportChatInviteRequest(
+                peer=client.get_entity(group_id),
+                legacy_revoke_permanent=True,
+                expire_date=None,
+                usage_limit=1
+            )
+        ).link
 
         client(InviteToChannelRequest(channel=group_id, users=[user]))
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
-        Gap.update(id=group_id, status='done').where(Gap.code == query.code).execute()
+        Gap.update(id=group_id, link=group_link, status='done').where(Gap.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
