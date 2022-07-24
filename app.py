@@ -139,7 +139,7 @@ def _create_both():
         code=channel_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=3,
+        task_type=1,
         title=request.args['title'],
         bio=request.args.get('channel_bio', ''),  # might there is not at all
         id='',
@@ -151,7 +151,7 @@ def _create_both():
         code=group_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=3,
+        task_type=2,
         title=request.args['title'],
         bio=request.args.get('group_bio', ''),  # might there is not at all
         id='',
