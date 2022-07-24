@@ -40,7 +40,7 @@ def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
         return result
 
-    code = generate_code()
+    channel_code = generate_code()
 
     Gap.create(
         code=channel_code,
@@ -86,7 +86,7 @@ def _create_group():
     if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
         return result
 
-    code = generate_code()
+    group_code = generate_code()
 
     Gap.create(
         code=group_code,
@@ -170,10 +170,14 @@ def _create_both():
     if group.status != 'failed' or channel.status != 'failed':
         return make_response(
             jsonify({
-                "message": '201 Channel and Group created',
-                "channel_id": channel.id,
-                "group_id": group.id,
-                "severity": "info"
+                'task_type': group.task_type,
+                'message': '201 Channel and Group created',
+                'title': group.title,
+                'channel_id': channel.id,
+                'channel_bio': channel.bio,
+                'group_id': group.id,
+                'group_bio': group.bio,
+                'severity': "info"
             }),
             201
         )
