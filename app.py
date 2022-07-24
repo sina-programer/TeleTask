@@ -4,7 +4,7 @@ import random
 import string
 import time
 
-from database import Query
+from database import Gap
 
 
 def check_attributes(data: dict, attrs):
@@ -30,7 +30,7 @@ def generate_code(length=8):
         return ''.join(random.sample(string.ascii_letters, length))
 
     code = _random_generate()
-    while Query.select().where(Query.code == code).exists():
+    while Gap.select().where(Gap.code == code).exists():
         code = _random_generate()
 
     return code
@@ -42,8 +42,8 @@ def _create_channel():
 
     code = generate_code()
 
-    Query.create(
-        code=code,
+    Gap.create(
+        code=channel_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
         task_type=request.args['task_type'],
@@ -54,10 +54,10 @@ def _create_channel():
         datetime=dt.datetime.now()
     )
 
-    while Query.select().where(Query.code == code, Query.status == 'pending').exists():  # wait until but create
+    while Gap.select().where(Gap.code == channel_code, Gap.status == 'pending').exists():  # wait until but create
         time.sleep(3)
 
-    channel = Query.get(code=code)
+    channel = Gap.get(code=channel_code)
 
     if channel.status != 'failed':
         return make_response(
@@ -88,8 +88,8 @@ def _create_group():
 
     code = generate_code()
 
-    Query.create(
-        code=code,
+    Gap.create(
+        code=group_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
         task_type=request.args['task_type'],
@@ -100,10 +100,10 @@ def _create_group():
         datetime=dt.datetime.now()
     )
 
-    while Query.select().where(Query.code == code, Query.status == 'pending').exists():  # wait until but create
+    while Gap.select().where(Gap.code == group_code, Gap.status == 'pending').exists():  # wait until but create
         time.sleep(3)
 
-    group = Query.get(code=code)
+    group = Gap.get(code=group_code)
 
     if group.status != 'failed':
         return make_response(
@@ -135,7 +135,7 @@ def _create_both():
     group_code = generate_code()
     channel_code = generate_code()
 
-    Query.create(
+    Gap.create(
         code=channel_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
@@ -147,7 +147,7 @@ def _create_both():
         datetime=dt.datetime.now()
     )
 
-    Query.create(
+    Gap.create(
         code=group_code,
         username=request.args['username'],
         phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
@@ -159,13 +159,13 @@ def _create_both():
         datetime=dt.datetime.now()
     )
 
-    while Query.select().where(Query.code == group_code, Query.status == 'pending').exists():
+    while Gap.select().where(Gap.code == channel_code, Gap.status == 'pending').exists():  # wait until but create
         time.sleep(3)
-    while Query.select().where(Query.code == channel_code, Query.status == 'pending').exists():  # wait until but create
+    while Gap.select().where(Gap.code == group_code, Gap.status == 'pending').exists():  # wait until but create
         time.sleep(3)
 
-    group = Query.get(code=group_code)
-    channel = Query.get(code=channel_code)
+    group = Gap.get(code=group_code)
+    channel = Gap.get(code=channel_code)
 
     if group.status != 'failed' or channel.status != 'failed':
         return make_response(

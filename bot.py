@@ -7,7 +7,7 @@ import datetime as dt
 import logging
 import time
 
-from database import Query
+from database import Gap
 
 import configparser
 
@@ -40,7 +40,7 @@ def create_channel(query):
         client(InviteToChannelRequest(channel=channel_id, users=[user]))
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
-        Query.update(id=channel_id, status='done').where(Query.code == query.code).execute()
+        Gap.update(id=channel_id, status='done').where(Gap.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -53,7 +53,7 @@ def create_channel(query):
         logging.exception(f"Unexpected Error")
 
     finally:
-        Query.update(status='failed').where(Query.code == query.code, Query.status != 'done').execute()
+        Gap.update(status='failed').where(Gap.code == query.code, Gap.status != 'done').execute()
 
 
 def create_group(query):
@@ -66,7 +66,7 @@ def create_group(query):
         client(InviteToChannelRequest(channel=group_id, users=[user]))
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
-        Query.update(id=group_id, status='done').where(Query.code == query.code).execute()
+        Gap.update(id=group_id, status='done').where(Gap.code == query.code).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -79,7 +79,7 @@ def create_group(query):
         logging.exception("Unexpected Error")
 
     finally:
-        Query.update(status='failed').where(Query.code == query.code, Query.status != 'done').execute()
+        Gap.update(status='failed').where(Gap.code == query.code, Gap.status != 'done').execute()
 
 
 def add_user(data):
@@ -115,7 +115,7 @@ def add_user(data):
 
 if __name__ == '__main__':
     while True:
-        if (new_queries := Query.select().where(Query.status == 'pending')).exists():
+        if (new_queries := Gap.select().where(Gap.status == 'pending')).exists():
             for query in new_queries:
                 if query.task_type == 1:
                     create_channel(query)
