@@ -50,6 +50,7 @@ def _create_channel():
         title=request.args['channel_title'],
         bio=request.args.get('channel_bio', ''),  # might there is not at all
         id='',
+        link='',
         status='pending',
         datetime=dt.datetime.now()
     )
@@ -66,6 +67,7 @@ def _create_channel():
                 'message': '201 Channel created',
                 'severity': "info",
                 'id': channel.id,
+                'link': channel.link,
                 'title': channel.title,
                 'bio': channel.bio
             }),
@@ -96,6 +98,7 @@ def _create_group():
         title=request.args['group_title'],
         bio=request.args.get('group_bio', ''),  # might there is not at all
         id='',
+        link='',
         status='pending',
         datetime=dt.datetime.now()
     )
@@ -112,6 +115,7 @@ def _create_group():
                 'message': '201 Group created',
                 'severity': "info",
                 'id': group.id,
+                'link': group.link,
                 'title': group.title,
                 'bio': group.bio
             }),
@@ -143,6 +147,7 @@ def _create_both():
         title=request.args['title'],
         bio=request.args.get('channel_bio', ''),  # might there is not at all
         id='',
+        link='',
         status='pending',
         datetime=dt.datetime.now()
     )
@@ -155,6 +160,7 @@ def _create_both():
         title=request.args['title'],
         bio=request.args.get('group_bio', ''),  # might there is not at all
         id='',
+        link='',
         status='pending',
         datetime=dt.datetime.now()
     )
@@ -175,8 +181,10 @@ def _create_both():
                 'title': group.title,
                 'channel_id': channel.id,
                 'channel_bio': channel.bio,
+                'channel_link': channel.link,
                 'group_id': group.id,
                 'group_bio': group.bio,
+                'group_link': group.link,
                 'severity': "info"
             }),
             201
