@@ -40,7 +40,7 @@ def create_channel(query):
                 peer=client.get_entity(channel_id),
                 legacy_revoke_permanent=True,
                 expire_date=None,
-                usage_limit=1
+                usage_limit=-1
             )
         ).link
 
@@ -74,7 +74,7 @@ def create_group(query):
                 peer=client.get_entity(group_id),
                 legacy_revoke_permanent=True,
                 expire_date=None,
-                usage_limit=1
+                usage_limit=-1
             )
         ).link
 
