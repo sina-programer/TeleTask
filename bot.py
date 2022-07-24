@@ -1,7 +1,6 @@
 from telethon.tl.functions.channels import CreateChannelRequest, CheckUsernameRequest, UpdateUsernameRequest, InviteToChannelRequest
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError
-from telethon.tl.functions.messages import AddChatUserRequest
-from telethon.tl.types import InputChannel, InputPeerChannel
+from telethon.tl.functions.messages import AddChatUserRequest, ExportChatInviteRequest
 from telethon import TelegramClient, events, sync
 import datetime as dt
 import logging
