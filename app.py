@@ -256,6 +256,53 @@ def add_user():
         )
 
 
+@app.route('/fetch', methods=['GET', 'POST'])
+def fetch():
+    return 'Please use /fetch/user to get users. \nYou can do the same with "gap" & "package"'
+
+
+@app.route('/fetch/user', methods=['GET', 'POST'])
+def fetch_user():
+    return jsonify({
+        {
+            'username': 'test_username',
+            'phone_number': '+980123456789',
+            'is_authenticated': True,
+            'signup_date': dt.date.today()
+        }
+    })
+
+
+@app.route('/fetch/gap', methods=['GET', 'POST'])
+def fetch_gap():
+    return jsonify({
+        {
+            'title': 'test_title',
+            'bio': 'lorem ipsum bio',
+            'id': '012345678987654321',
+            'link': 'https://www.google.com',
+            'create_date': dt.date.today(),
+            'task_type': 2
+        }
+    })
+
+
+@app.route('/fetch/package', methods=['GET', 'POST'])
+def fetch_package():
+    return jsonify({
+        {
+            'teacher': 'test_teacher',
+            'student': 'test_student',
+            'expire_date': dt.date.today() + dt.timedelta(days=100),
+            'signup_date': dt.date.today(),
+            'description': 'long text',
+            'title': 'NewPackage',
+            'channel': 'my channel',
+            'group': 'my group'
+        }
+    })
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, use_reloader=False)
