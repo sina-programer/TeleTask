@@ -264,7 +264,7 @@ def fetch():
 @app.route('/fetch/user', methods=['GET', 'POST'])
 def fetch_user():
     return jsonify({
-        {
+        'first': {
             'username': 'test_username',
             'phone_number': '+980123456789',
             'is_authenticated': True,
@@ -276,7 +276,7 @@ def fetch_user():
 @app.route('/fetch/gap', methods=['GET', 'POST'])
 def fetch_gap():
     return jsonify({
-        {
+        'first': {
             'title': 'test_title',
             'bio': 'lorem ipsum bio',
             'id': '012345678987654321',
@@ -290,7 +290,7 @@ def fetch_gap():
 @app.route('/fetch/package', methods=['GET', 'POST'])
 def fetch_package():
     return jsonify({
-        {
+        'first': {
             'teacher': 'test_teacher',
             'student': 'test_student',
             'expire_date': dt.date.today() + dt.timedelta(days=100),
