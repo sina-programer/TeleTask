@@ -1,6 +1,8 @@
 Files/
 database.db
 telethon-session.session
+telethon-session.session-journal
+web--.config--
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
