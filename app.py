@@ -22,8 +22,7 @@ def check_attributes(data: dict, attrs):
                 return jsonify({'message': f"you have to enter at least one of {attr}"})
 
         elif not data.get(attr, None):
-            return jsonify({'message': f"{attr} is invalid"})
-
+            return jsonify({'message': f"<{attr}> is invalid"})
 
 def generate_code(length=8):
     def _random_generate():
