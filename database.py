@@ -9,24 +9,45 @@ db = pw.SqliteDatabase(config['Database']['path'])
 db.connect()
 
 
-class Gap(pw.Model):
-    code = pw.CharField(unique=True)  # the unique code to detect different queries
-    username = pw.CharField()
-    phone_number = pw.CharField()
-    task_type = pw.IntegerField()
-    title = pw.CharField()
-    bio = pw.TextField()
-    id = pw.CharField()  # final created id of gap
-    link = pw.CharField()
-    status = pw.CharField()
-    datetime = pw.DateTimeField()  # created time
-
+class Base(pw.Model):
     class Meta:
         database = db
 
 
+class User(Base):
+    id = pw.CharField(unique=True, null=True)
+    username = pw.CharField()
+    phone_number = pw.CharField()
+    authenticated = pw.BooleanField()
+    signup_date = pw.DateField()
 
-TABLES = [Gap]
+
+class Gap(Base):
+    id = pw.CharField(null=True)
+    title = pw.CharField()
+    bio = pw.TextField()
+    link = pw.CharField(null=True)
+    create_date = pw.DateField()
+
+
+class Task(Base):
+    type = pw.IntegerField()
+    status = pw.CharField()
+    create_time = pw.DateTimeField()
+    done_time = pw.DateTimeField(null=True)
+
+
+class Member(Base):
+    user = pw.ForeignKeyField(User)
+    gap = pw.ForeignKeyField(Gap)
+    is_admin = pw.BooleanField()
+    task = pw.ForeignKeyField(Task)
+    add_date = pw.DateField()
+    expire_date = pw.DateField(null=True)
+
+
+
+TABLES = [User, Gap, Task, Member]
 
 for table in TABLES:  # Create tables
     not db.table_exists(table.__name__) and db.create_tables([table])
