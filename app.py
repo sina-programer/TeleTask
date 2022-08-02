@@ -314,49 +314,38 @@ def add_user():
 
 @app.route('/fetch', methods=['GET', 'POST'])
 def fetch():
-    return 'Please use /fetch/user to get users. \nYou can do the same with "gap" & "package"'
+    return 'Please use /fetch/user to get users. \nYou can do the same with "gap"'
 
 
 @app.route('/fetch/user', methods=['GET', 'POST'])
 def fetch_user():
-    return jsonify({
-        'first': {
-            'username': 'test_username',
-            'phone_number': '+980123456789',
-            'is_authenticated': True,
-            'signup_date': dt.date.today()
+    response = {}
+    for user in User.select():
+        response[user.id] = {
+            'username': user.username,
+            'id': user.telegram_id,
+            'phone_number': user.phone_number,
+            'authenticated': user.authenticated,
+            'signup_date': user.signup_date
         }
-    })
+
+    return jsonify(response)
 
 
 @app.route('/fetch/gap', methods=['GET', 'POST'])
 def fetch_gap():
-    return jsonify({
-        'first': {
-            'title': 'test_title',
-            'bio': 'lorem ipsum bio',
-            'id': '012345678987654321',
-            'link': 'https://www.google.com',
-            'create_date': dt.date.today(),
-            'task_type': 2
+    response = {}
+    for gap in Gap.select():
+        response[gap.id] = {
+            'id': gap.telegram_id,
+            'link': gap.link,
+            'package_id': gap.package_id,
+            'title': gap.title,
+            'bio': gap.bio,
+            'create_date': gap.create_date
         }
-    })
 
-
-@app.route('/fetch/package', methods=['GET', 'POST'])
-def fetch_package():
-    return jsonify({
-        'first': {
-            'teacher': 'test_teacher',
-            'student': 'test_student',
-            'expire_date': dt.date.today() + dt.timedelta(days=100),
-            'signup_date': dt.date.today(),
-            'description': 'long text',
-            'title': 'NewPackage',
-            'channel': 'my channel',
-            'group': 'my group'
-        }
-    })
+    return jsonify(response)
 
 
 
