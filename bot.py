@@ -47,7 +47,7 @@ def create_channel(member):
         client(InviteToChannelRequest(channel=channel_id, users=[user]))
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
-        Gap.update(id=channel_id, link=channel_link).where(Gap.id == member.gap.id).execute()
+        Gap.update(telegram_id=channel_id, link=channel_link).where(Gap.id == member.gap.id).execute()
         Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
@@ -82,7 +82,7 @@ def create_group(member):
         client(InviteToChannelRequest(channel=group_id, users=[user]))
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
-        Gap.update(id=group_id, link=group_link).where(Gap.id == member.gap.id).execute()
+        Gap.update(telegram_id=group_id, link=group_link).where(Gap.id == member.gap.id).execute()
         Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
