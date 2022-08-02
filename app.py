@@ -204,14 +204,14 @@ def _create_both():
 
     group_member = Member.create(
         user=user,
-        gap=channel,
+        gap=group,
         is_admin=True,
         task=channel_task,
         add_date=dt.date.today()
     )
     channel_member = Member.create(
         user=user,
-        gap=group,
+        gap=channel,
         is_admin=True,
         task=group_task,
         add_date=dt.date.today()
