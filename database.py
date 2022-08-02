@@ -15,7 +15,7 @@ class Base(pw.Model):
 
 
 class User(Base):
-    id = pw.CharField(unique=True, null=True)
+    telegram_id = pw.CharField(unique=True, null=True)
     username = pw.CharField()
     phone_number = pw.CharField()
     authenticated = pw.BooleanField()
@@ -23,7 +23,7 @@ class User(Base):
 
 
 class Gap(Base):
-    id = pw.CharField(null=True)
+    telegram_id = pw.CharField(null=True)
     title = pw.CharField()
     bio = pw.TextField()
     link = pw.CharField(null=True)
