@@ -61,7 +61,8 @@ def create_channel(member):
         logging.exception(f"Unexpected Error")
 
     finally:
-        Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+        if Task.select().where(Task.id == member.task.id, Task.status != 'done').exists():
+            Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
 
 def create_group(member):
@@ -96,7 +97,8 @@ def create_group(member):
         logging.exception("Unexpected Error")
 
     finally:
-        Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+        if Task.select().where(Task.id == member.task.id, Task.status != 'done').exists():
+            Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
 
 def add_user(data):
