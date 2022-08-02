@@ -1,10 +1,8 @@
 from flask import Flask, jsonify, request, make_response
 import datetime as dt
-import random
-import string
 import time
 
-from database import Gap
+from database import User, Task, Gap, Member
 
 
 def check_attributes(data: dict, attrs):
@@ -24,51 +22,61 @@ def check_attributes(data: dict, attrs):
         elif not data.get(attr, None):
             return jsonify({'message': f"<{attr}> is invalid"})
 
-def generate_code(length=8):
-    def _random_generate():
-        return ''.join(random.sample(string.ascii_letters, length))
-
-    code = _random_generate()
-    while Gap.select().where(Gap.code == code).exists():
-        code = _random_generate()
-
-    return code
-
 
 def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
         return result
 
-    channel_code = generate_code()
-
-    Gap.create(
-        code=channel_code,
-        username=request.args['username'],
-        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=request.args['task_type'],
-        title=request.args['channel_title'],
-        bio=request.args.get('channel_bio', ''),  # might there is not at all
-        id='',
-        link='',
+    task = Task.create(
+        type=1,
         status='pending',
-        datetime=dt.datetime.now()
+        create_time=dt.datetime.now()
     )
 
-    while Gap.select().where(Gap.code == channel_code, Gap.status == 'pending').exists():  # wait until but create
+    channel = Gap.create(
+        title=request.args['channel_title'],
+        bio=request.args.get('channel_bio', ''),  # maybe there is not at all
+        create_date=dt.date.today(),
+    )
+
+    user = User.get_or_none(
+        username=request.args['username'],
+        phone_number=request.args['phone_number'],
+    )
+    if not user:
+        user = User.create(
+            username=request.args['username'],
+            phone_number=request.args['phone_number'],
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
+
+    member = Member.create(
+        user=user,
+        gap=channel,
+        is_admin=True,
+        task=task,
+        add_date=dt.date.today()
+    )
+
+
+    while True:
         time.sleep(3)
+        member = Member.get_by_id(member.id)
+        if member.task.status != 'pending':
+            break
 
-    channel = Gap.get(code=channel_code)
 
-    if channel.status != 'failed':
+    if member.task.status == 'done':
         return make_response(
             jsonify({
                 'task_type': 1,
                 'message': '201 Channel created',
                 'severity': "info",
-                'id': channel.id,
-                'link': channel.link,
-                'title': channel.title,
-                'bio': channel.bio
+                'id': member.gap.telegram_id,
+                'link': member.gap.link,
+                'title': member.gap.title,
+                'bio': member.gap.bio
             }),
             201
         )
@@ -87,36 +95,55 @@ def _create_group():
     if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
         return result
 
-    group_code = generate_code()
-
-    Gap.create(
-        code=group_code,
-        username=request.args['username'],
-        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=request.args['task_type'],
-        title=request.args['group_title'],
-        bio=request.args.get('group_bio', ''),  # might there is not at all
-        id='',
-        link='',
+    task = Task.create(
+        type=2,
         status='pending',
-        datetime=dt.datetime.now()
+        create_time=dt.datetime.now()
     )
 
-    while Gap.select().where(Gap.code == group_code, Gap.status == 'pending').exists():  # wait until but create
+    group = Gap.create(
+        title=request.args['group_title'],
+        bio=request.args.get('group_bio', ''),  # might there is not at all
+        create_date=dt.date.today(),
+        task=task
+    )
+
+    user = User.get_or_none(
+        username=request.args['username'],
+        phone_number=request.args['phone_number']
+    )
+    if not user:
+        user = User.create(
+            username=request.args['username'],
+            phone_number=request.args['phone_number'],
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
+
+    member = Member.create(
+        user=user,
+        gap=group,
+        is_admin=True,
+        task=task,
+        add_date=dt.date.today()
+    )
+
+    while True:
         time.sleep(3)
+        member = Member.get_by_id(member.id)
+        if member.task.status != 'pending':
+            break
 
-    group = Gap.get(code=group_code)
-
-    if group.status != 'failed':
+    if member.task.status == 'done':
         return make_response(
             jsonify({
                 'task_type': 2,
                 'message': '201 Group created',
                 'severity': "info",
-                'id': group.id,
-                'link': group.link,
-                'title': group.title,
-                'bio': group.bio
+                'id': member.gap.telegram_id,
+                'link': member.gap.link,
+                'title': member.gap.title,
+                'bio': member.gap.bio
             }),
             201
         )
@@ -135,55 +162,78 @@ def _create_both():
     if result := check_attributes(request.args, ['username', 'phone_number', 'title']):
         return result
 
-    group_code = generate_code()
-    channel_code = generate_code()
+    channel_task = Task.create(
+        type=1,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
+    group_task = Task.create(
+        type=2,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
 
-    Gap.create(
-        code=channel_code,
-        username=request.args['username'],
-        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=1,
+    channel = Gap.create(
         title=request.args['title'],
         bio=request.args.get('channel_bio', ''),  # might there is not at all
-        id='',
-        link='',
-        status='pending',
-        datetime=dt.datetime.now()
+        create_date=dt.date.today(),
     )
-
-    Gap.create(
-        code=group_code,
-        username=request.args['username'],
-        phone_number=f"+{request.args['phone_number'][1:]}",  # replace first space with plus
-        task_type=2,
+    group = Gap.create(
         title=request.args['title'],
-        bio=request.args.get('group_bio', ''),  # might there is not at all
-        id='',
-        link='',
-        status='pending',
-        datetime=dt.datetime.now()
+        bio=request.args.get('group_bio', ''),
+        create_date=dt.date.today(),
     )
 
-    while Gap.select().where(Gap.code == channel_code, Gap.status == 'pending').exists():  # wait until but create
-        time.sleep(3)
-    while Gap.select().where(Gap.code == group_code, Gap.status == 'pending').exists():  # wait until but create
-        time.sleep(3)
+    user = User.get_or_none(
+        username=request.args['username'],
+        phone_number=request.args['phone_number'],
+    )
+    if not user:
+        user = User.create(
+            username=request.args['username'],
+            phone_number=request.args['phone_number'],
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
 
-    group = Gap.get(code=group_code)
-    channel = Gap.get(code=channel_code)
+    group_member = Member.create(
+        user=user,
+        gap=channel,
+        is_admin=True,
+        task=channel_task,
+        add_date=dt.date.today()
+    )
+    channel_member = Member.create(
+        user=user,
+        gap=group,
+        is_admin=True,
+        task=group_task,
+        add_date=dt.date.today()
+    )
 
-    if group.status != 'failed' or channel.status != 'failed':
+
+    for member in [group_member, channel_member]:
+        while True:
+            time.sleep(3)
+            member = Member.get_by_id(member.id)
+            if member.task.status != 'pending':
+                break
+
+    group_member = Member.get_by_id(group_member.id)
+    channel_member = Member.get_by_id(channel_member.id)
+
+    if group_member.task.status == 'done' or channel_member.task.status == 'done':
         return make_response(
             jsonify({
                 'task_type': 3,
                 'message': '201 Channel and Group created',
-                'title': group.title,
-                'channel_id': channel.id,
-                'channel_bio': channel.bio,
-                'channel_link': channel.link,
-                'group_id': group.id,
-                'group_bio': group.bio,
-                'group_link': group.link,
+                'title': channel_member.gap.title,
+                'channel_id': channel_member.gap.telegram_id,
+                'channel_bio': channel_member.gap.bio,
+                'channel_link': channel_member.gap.link,
+                'group_id': group_member.gap.telegram_id,
+                'group_bio': group_member.gap.bio,
+                'group_link': group_member.gap.link,
                 'severity': "info"
             }),
             201

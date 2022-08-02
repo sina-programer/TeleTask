@@ -6,7 +6,7 @@ import datetime as dt
 import logging
 import time
 
-from database import Gap
+from database import User, Task, Gap, Member
 
 import configparser
 
@@ -29,11 +29,11 @@ client.start()
 logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
 
-def create_channel(query):
+def create_channel(member):
     try:
-        user = client.get_input_entity(query.username)
+        user = client.get_input_entity(member.user.username)
 
-        channel = client(CreateChannelRequest(query.title, query.bio, megagroup=False))
+        channel = client(CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=False))
         channel_id = channel.__dict__["chats"][0].__dict__["id"]
         channel_link = client(
             ExportChatInviteRequest(
@@ -47,7 +47,8 @@ def create_channel(query):
         client(InviteToChannelRequest(channel=channel_id, users=[user]))
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
-        Gap.update(id=channel_id, link=channel_link, status='done').where(Gap.code == query.code).execute()
+        Gap.update(id=channel_id, link=channel_link).where(Gap.id == member.gap.id).execute()
+        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -60,14 +61,14 @@ def create_channel(query):
         logging.exception(f"Unexpected Error")
 
     finally:
-        Gap.update(status='failed').where(Gap.code == query.code, Gap.status != 'done').execute()
+        Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
 
-def create_group(query):
+def create_group(member):
     try:
-        user = client.get_input_entity(query.username)
+        user = client.get_input_entity(member.user.username)
 
-        group = client(CreateChannelRequest(query.title, query.bio, megagroup=True))
+        group = client(CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=True))
         group_id = group.__dict__["chats"][0].__dict__['id']
         group_link = client(
             ExportChatInviteRequest(
@@ -81,7 +82,8 @@ def create_group(query):
         client(InviteToChannelRequest(channel=group_id, users=[user]))
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
-        Gap.update(id=group_id, link=group_link, status='done').where(Gap.code == query.code).execute()
+        Gap.update(id=group_id, link=group_link).where(Gap.id == member.gap.id).execute()
+        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -94,7 +96,7 @@ def create_group(query):
         logging.exception("Unexpected Error")
 
     finally:
-        Gap.update(status='failed').where(Gap.code == query.code, Gap.status != 'done').execute()
+        Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
 
 def add_user(data):
@@ -130,13 +132,12 @@ def add_user(data):
 
 if __name__ == '__main__':
     while True:
-        if (new_queries := Gap.select().where(Gap.status == 'pending')).exists():
-            for query in new_queries:
-                if query.task_type == 1:
-                    create_channel(query)
+        if task := Task.select().where(Task.status == 'pending').first():
+            member = Member.get(task=task)
+            if task.type == 1:
+                create_channel(member)
 
-                elif query.task_type == 2:
-                    create_group(query)
-
+            elif task.type == 2:
+                create_group(member)
 
         time.sleep(3)
