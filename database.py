@@ -39,10 +39,10 @@ class Task(Base):
 
 
 class Member(Base):
-    user = pw.ForeignKeyField(User)
-    gap = pw.ForeignKeyField(Gap)
+    user = pw.ForeignKeyField(User, backref='member')
+    gap = pw.ForeignKeyField(Gap, backref='member')
     is_admin = pw.BooleanField()
-    task = pw.ForeignKeyField(Task)
+    task = pw.ForeignKeyField(Task, backref='member')
     add_date = pw.DateField()
     expire_date = pw.DateField(null=True)
 
