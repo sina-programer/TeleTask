@@ -23,6 +23,20 @@ def check_attributes(data: dict, attrs):
             return jsonify({'message': f"<{attr}> is invalid"})
 
 
+def _get_mask(prefix, Model):
+    """
+    this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
+    """
+
+    fields = list(Model._meta.fields.keys())
+    if params := {key.removeprefix(prefix): value for key, value in request.args.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
+        model = Model.get_or_none(**params)  # get obj instance by <params>
+        if model:
+            return Model.id == model.id
+
+        return False  # if there isn't desired instance, return nothing
+
+
 def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'package_id']):
         return result
@@ -317,19 +331,37 @@ def add_user():
 
 @app.route('/fetch', methods=['GET', 'POST'])
 def fetch():
-    return 'Please use /fetch/user to get users. \nYou can do the same with "gap"'
+    return 'Please use /fetch/user to get users. You can do the same with "gap"'
 
 
 @app.route('/fetch/user', methods=['GET', 'POST'])
 def fetch_user():
+    prefixes = ['gap', 'task', 'user']  # only tables who have at least one ForeignKeyField in Member table
+    # masks = {prefix: _get_mask(f'{prefix}_', eval(prefix.title())) for prefix in prefixes}  # not very readable
+    masks = {
+        # table_name: table_mask
+        'gap': _get_mask('gap_', Gap),
+        'task': _get_mask('task_', Task),
+        'user': _get_mask('user_', User)
+    }
+
+    mask = Member.select()
+    # filter by Member fields, without prefix
+    mask = mask & Member.select().where(_get_mask('', Member))
+
+    for key, value in masks.items():
+        mask = mask & Member.select().join(eval(key.title())).where(value)
+
+    user_fields = list(User._meta.fields.keys())
+    # response = {member.user.id: {f: getattr(member.user, f) for f in user_fields} for member in mask}
     response = {}
-    for user in User.select():
-        response[user.id] = {
-            'username': user.username,
-            'id': user.telegram_id,
-            'phone_number': user.phone_number,
-            'authenticated': user.authenticated,
-            'signup_date': user.signup_date
+    for member in mask:
+        response[member.user.id] = {
+            'username': member.user.username,
+            'id': member.user.telegram_id,
+            'phone_number': member.user.phone_number,
+            'authenticated': member.user.authenticated,
+            'signup_date': member.user.signup_date
         }
 
     return jsonify(response)
@@ -337,15 +369,33 @@ def fetch_user():
 
 @app.route('/fetch/gap', methods=['GET', 'POST'])
 def fetch_gap():
+    prefixes = ['gap', 'task', 'user']  # only tables who have at least one ForeignKeyField in Member table
+    # masks = {prefix: _get_mask(f'{prefix}_', eval(prefix.title())) for prefix in prefixes}  # not very readable
+    masks = {
+        # table_name: table_mask
+        'gap': _get_mask('gap_', Gap),
+        'task': _get_mask('task_', Task),
+        'user': _get_mask('user_', User)
+    }
+
+    mask = Member.select()
+    # filter by Member fields, without prefix
+    mask = mask & Member.select().where(_get_mask('', Member))
+
+    for key, value in masks.items():
+        mask = mask & Member.select().join(eval(key.title())).where(value)
+
+    gap_fields = list(Gap._meta.fields.keys())
+    # response = {member.gap.id: {f: getattr(member.user, f) for f in gap_fields} for member in mask}
     response = {}
-    for gap in Gap.select():
-        response[gap.id] = {
-            'id': gap.telegram_id,
-            'link': gap.link,
-            'package_id': gap.package_id,
-            'title': gap.title,
-            'bio': gap.bio,
-            'create_date': gap.create_date
+    for member in mask:
+        response[member.gap.id] = {
+            'id': member.gap.telegram_id,
+            'link': member.gap.link,
+            'package_id': member.gap.package_id,
+            'title': member.gap.title,
+            'bio': member.gap.bio,
+            'create_date': member.gap.create_date
         }
 
     return jsonify(response)
