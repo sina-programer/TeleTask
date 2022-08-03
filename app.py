@@ -23,20 +23,6 @@ def check_attributes(data: dict, attrs):
             return jsonify({'message': f"<{attr}> is invalid"})
 
 
-def _get_mask(prefix, Model):
-    """
-    this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
-    """
-
-    fields = list(Model._meta.fields.keys())
-    if params := {key.removeprefix(prefix): value for key, value in request.args.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
-        model = Model.get_or_none(**params)  # get obj instance by <params>
-        if model:
-            return Model.id == model.id
-
-        return False  # if there isn't desired instance, return nothing
-
-
 def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'package_id']):
         return result
@@ -334,8 +320,21 @@ def fetch():
     return 'Please use /fetch/user to get users. You can do the same with "gap"'
 
 
-@app.route('/fetch/user', methods=['GET', 'POST'])
-def fetch_user():
+def _get_mask(prefix, Model):
+    """
+    this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
+    """
+
+    fields = list(Model._meta.fields.keys())
+    if params := {key.removeprefix(prefix): value for key, value in request.args.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
+        model = Model.get_or_none(**params)  # get obj instance by <params>
+        if model:
+            return Model.id == model.id
+
+        return False  # if there isn't desired instance, return nothing
+
+
+def _fetch():
     prefixes = ['gap', 'task', 'user']  # only tables who have at least one ForeignKeyField in Member table
     # masks = {prefix: _get_mask(f'{prefix}_', eval(prefix.title())) for prefix in prefixes}  # not very readable
     masks = {
@@ -352,6 +351,12 @@ def fetch_user():
     for key, value in masks.items():
         mask = mask & Member.select().join(eval(key.title())).where(value)
 
+    return mask
+
+
+@app.route('/fetch/user', methods=['GET', 'POST'])
+def fetch_user():
+    mask = _fetch()
     user_fields = list(User._meta.fields.keys())
     # response = {member.user.id: {f: getattr(member.user, f) for f in user_fields} for member in mask}
     response = {}
@@ -369,24 +374,9 @@ def fetch_user():
 
 @app.route('/fetch/gap', methods=['GET', 'POST'])
 def fetch_gap():
-    prefixes = ['gap', 'task', 'user']  # only tables who have at least one ForeignKeyField in Member table
-    # masks = {prefix: _get_mask(f'{prefix}_', eval(prefix.title())) for prefix in prefixes}  # not very readable
-    masks = {
-        # table_name: table_mask
-        'gap': _get_mask('gap_', Gap),
-        'task': _get_mask('task_', Task),
-        'user': _get_mask('user_', User)
-    }
-
-    mask = Member.select()
-    # filter by Member fields, without prefix
-    mask = mask & Member.select().where(_get_mask('', Member))
-
-    for key, value in masks.items():
-        mask = mask & Member.select().join(eval(key.title())).where(value)
-
+    mask = _fetch()
     gap_fields = list(Gap._meta.fields.keys())
-    # response = {member.gap.id: {f: getattr(member.user, f) for f in gap_fields} for member in mask}
+    # response = {member.gap.id: {f: getattr(member.gap, f) for f in gap_fields} for member in mask}
     response = {}
     for member in mask:
         response[member.gap.id] = {
