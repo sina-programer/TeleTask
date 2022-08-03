@@ -363,7 +363,7 @@ def fetch_user():
     for member in mask:
         response[member.user.id] = {
             'username': member.user.username,
-            'id': member.user.telegram_id,
+            'telegram_id': member.user.telegram_id,
             'phone_number': member.user.phone_number,
             'authenticated': member.user.authenticated,
             'signup_date': member.user.signup_date
@@ -380,7 +380,7 @@ def fetch_gap():
     response = {}
     for member in mask:
         response[member.gap.id] = {
-            'id': member.gap.telegram_id,
+            'telegram_id': member.gap.telegram_id,
             'link': member.gap.link,
             'package_id': member.gap.package_id,
             'title': member.gap.title,
