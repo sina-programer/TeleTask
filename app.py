@@ -325,7 +325,7 @@ def _get_mask(prefix, Model):
     this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
     """
 
-    fields = list(Model._meta.fields.keys())
+    fields = Model.get_fields()
     if params := {key.removeprefix(prefix): value for key, value in request.args.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
         model = Model.get_or_none(**params)  # get obj instance by <params>
         if model:
@@ -357,7 +357,7 @@ def _fetch():
 @app.route('/fetch/user', methods=['GET', 'POST'])
 def fetch_user():
     mask = _fetch()
-    user_fields = list(User._meta.fields.keys())
+    user_fields = User.get_fields()
     # response = {member.user.id: {f: getattr(member.user, f) for f in user_fields} for member in mask}
     response = {}
     for member in mask:
@@ -375,7 +375,7 @@ def fetch_user():
 @app.route('/fetch/gap', methods=['GET', 'POST'])
 def fetch_gap():
     mask = _fetch()
-    gap_fields = list(Gap._meta.fields.keys())
+    gap_fields = Gap.get_fields()
     # response = {member.gap.id: {f: getattr(member.gap, f) for f in gap_fields} for member in mask}
     response = {}
     for member in mask:

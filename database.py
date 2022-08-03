@@ -10,6 +10,11 @@ db.connect()
 
 
 class Base(pw.Model):
+
+    @classmethod
+    def get_fields(cls):
+        return list(cls._meta.fields.keys())
+
     class Meta:
         database = db
 
