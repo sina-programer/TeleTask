@@ -27,12 +27,6 @@ def _create_channel():
     if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
         return result
 
-    task = Task.create(
-        type=1,
-        status='pending',
-        create_time=dt.datetime.now()
-    )
-
     channel = Gap.create(
         package_id=request.args.get('package_id', None),
         title=request.args['channel_title'],
@@ -52,6 +46,12 @@ def _create_channel():
             authenticated=False,
             signup_date=dt.date.today()
         )
+
+    task = Task.create(
+        type=1,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
 
     member = Member.create(
         user=user,
@@ -98,12 +98,6 @@ def _create_group():
     if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
         return result
 
-    task = Task.create(
-        type=2,
-        status='pending',
-        create_time=dt.datetime.now()
-    )
-
     group = Gap.create(
         package_id=request.args.get('package_id', None),
         title=request.args['group_title'],
@@ -123,6 +117,12 @@ def _create_group():
             authenticated=False,
             signup_date=dt.date.today()
         )
+
+    task = Task.create(
+        type=2,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
 
     member = Member.create(
         user=user,
@@ -167,17 +167,6 @@ def _create_both():
     if result := check_attributes(request.args, ['username', 'phone_number', 'group_title', 'channel_title']):
         return result
 
-    channel_task = Task.create(
-        type=1,
-        status='pending',
-        create_time=dt.datetime.now()
-    )
-    group_task = Task.create(
-        type=2,
-        status='pending',
-        create_time=dt.datetime.now()
-    )
-
     channel = Gap.create(
         package_id=request.args.get('package_id', None),
         title=request.args['channel_title'],
@@ -205,18 +194,29 @@ def _create_both():
             signup_date=dt.date.today()
         )
 
+    group_task = Task.create(
+        type=2,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
     group_member = Member.create(
         user=user,
         gap=group,
         is_admin=True,
-        task=channel_task,
+        task=group_task,
         add_date=dt.date.today()
+    )
+
+    channel_task = Task.create(
+        type=1,
+        status='pending',
+        create_time=dt.datetime.now()
     )
     channel_member = Member.create(
         user=user,
         gap=channel,
         is_admin=True,
-        task=group_task,
+        task=channel_task,
         add_date=dt.date.today()
     )
 
