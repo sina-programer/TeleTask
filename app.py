@@ -292,16 +292,79 @@ def add_user():
     if result := check_attributes(request.args, ['username', 'phone_number', ['channel_id', 'group_id']]):
         return result
 
+    if expire_date := request.args.get('expire_date', None):
+        expire_date = dt.datetime.strptime(expire_date, '%d_%m_%Y').date()
 
-    added_chat_ids = bot.add_user(request.args)
+    user = User.get_or_none(
+        username=request.args['username'],
+        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
+    )
+    if not user:
+        user = User.create(
+            username=request.args['username'],
+            phone_number=request.args['phone_number'].strip(),
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
 
-    if added_chat_ids:
+    tasks = []
+    done_response = {
+        "message": '200 user added',
+        "severity": "info"
+    }
+
+    if channel_id := request.args.get('channel_id', None):
+        channel_task = Task.create(
+            type=4,
+            status='pending',
+            create_time=dt.datetime.now()
+        )
+        tasks.append(channel_task)
+
+        channel_member = Member.create(
+            user=user,
+            gap=Gap.get_or_none(telegram_id=channel_id),
+            is_admin=False,
+            task=channel_task,
+            add_date=dt.date.today(),
+            expire_date=expire_date
+        )
+
+
+    if group_id := request.args.get('group_id', None):
+        group_task = Task.create(
+            type=4,
+            status='pending',
+            create_time=dt.datetime.now()
+        )
+        tasks.append(group_task)
+
+        group_member = Member.create(
+            user=user,
+            gap=Gap.get_or_none(telegram_id=group_id),
+            is_admin=False,
+            task=group_task,
+            add_date=dt.date.today(),
+            expire_date=expire_date
+        )
+
+    while Member.select().where(Member.task.in_(tasks)).join(Task).where(Task.status == 'pending').exists():
+        time.sleep(3)
+
+
+    condition = False
+    if request.args.get('channel_id', None):
+        channel_member = Member.get_by_id(channel_member.id)
+        done_response['added_channel_id'] = channel_member.gap.telegram_id
+        condition = condition or channel_member.task.status == 'done'
+    if request.args.get('group_id', None):
+        group_member = Member.get_by_id(group_member.id)
+        done_response['added_group_id'] = group_member.gap.telegram_id
+        condition = condition or group_member.task.status == 'done'
+
+    if condition:
         return make_response(
-            jsonify({
-                "message": '200 user added',
-                "added_chat_ids": str(added_chat_ids),
-                "severity": "info"
-                }),
+            jsonify(done_response),
             200
         )
 

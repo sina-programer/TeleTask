@@ -101,25 +101,11 @@ def create_group(member):
             Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
 
-def add_user(data):
-    action_username = data['username']
-    channel_id = int(data['channel_id'])
-    group_id = int(data['group_id'])
-
+def add_user(member):
     try:
-        username = action_username  # if action_username.startswith('@') else '@'+action_username
-        user_to_add = client.get_entity(username)
-        added_chat_ids = {}
-
-        if channel_id:
-            client(InviteToChannelRequest(channel=channel_id, users=[user_to_add]))
-            added_chat_ids['channel'] = channel_id
-
-        if group_id:
-            client(InviteToChannelRequest(channel=group_id, users=[user_to_add]))
-            added_chat_ids['group'] = group_id
-
-        return added_chat_ids
+        user = client.get_entity(member.user.username)
+        client(InviteToChannelRequest(channel=member.gap.id, users=[user]))
+        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -141,6 +127,9 @@ if __name__ == '__main__':
 
             elif task.type == 2:
                 create_group(member)
+
+            elif task.type == 4:
+                add_user(member)
 
 
         if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
