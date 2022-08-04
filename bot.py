@@ -143,9 +143,9 @@ if __name__ == '__main__':
                 create_group(member)
 
 
-        if user := User.select().where(~User.telegram_id).first():  # set User.telegram_id for new users
+        if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
             user_entity = client.get_input_entity(user.username)
-            User.update(telegram_id=user_entity.id).where(User.username == user.username).execute()
+            User.update(telegram_id=user_entity.user_id).where(User.username == user.username).execute()
 
 
         time.sleep(3)
