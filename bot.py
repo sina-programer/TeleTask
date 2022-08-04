@@ -103,8 +103,8 @@ def create_group(member):
 
 def add_user(member):
     try:
-        user = client.get_entity(member.user.username)
-        client(InviteToChannelRequest(channel=member.gap.id, users=[user]))
+        user = client.get_input_entity(member.user.username)
+        client(InviteToChannelRequest(channel=member.gap.telegram_id, users=[user]))
         Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
