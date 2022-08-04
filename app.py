@@ -164,7 +164,7 @@ def _create_group():
 
 
 def _create_both():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'title']):
+    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title', 'channel_title']):
         return result
 
     channel_task = Task.create(
@@ -180,14 +180,14 @@ def _create_both():
 
     channel = Gap.create(
         package_id=request.args.get('package_id', None),
-        title=request.args['title'],
+        title=request.args['channel_title'],
         bio=request.args.get('channel_bio', None),  # might there is not at all
         create_date=dt.date.today(),
         is_group=False
     )
     group = Gap.create(
         package_id=request.args.get('package_id', None),
-        title=request.args['title'],
+        title=request.args['group_title'],
         bio=request.args.get('group_bio', None),
         create_date=dt.date.today(),
         is_group=True
@@ -237,12 +237,13 @@ def _create_both():
                 'task_type': 3,
                 'message': '201 Channel and Group created',
                 'package_id': channel_member.gap.package_id,
-                'title': channel_member.gap.title,
+                'channel_title': channel_member.gap.title,
                 'channel_id': channel_member.gap.telegram_id,
                 'channel_bio': channel_member.gap.bio,
                 'channel_link': channel_member.gap.link,
                 'group_id': group_member.gap.telegram_id,
                 'group_bio': group_member.gap.bio,
+                'group_title': group_member.gap.title,
                 'group_link': group_member.gap.link,
                 'severity': "info"
             }),
