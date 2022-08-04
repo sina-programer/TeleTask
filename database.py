@@ -34,6 +34,7 @@ class Gap(Base):
     bio = pw.TextField(null=True)
     link = pw.CharField(null=True)
     create_date = pw.DateField()
+    is_group = pw.BooleanField()
 
 
 class Task(Base):

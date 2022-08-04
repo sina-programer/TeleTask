@@ -38,6 +38,7 @@ def _create_channel():
         title=request.args['channel_title'],
         bio=request.args.get('channel_bio', None),  # maybe there is not at all
         create_date=dt.date.today(),
+        is_group=False,
     )
 
     user = User.get_or_none(
@@ -108,7 +109,7 @@ def _create_group():
         title=request.args['group_title'],
         bio=request.args.get('group_bio', None),  # might there is not at all
         create_date=dt.date.today(),
-        task=task
+        is_group=True
     )
 
     user = User.get_or_none(
@@ -182,12 +183,14 @@ def _create_both():
         title=request.args['title'],
         bio=request.args.get('channel_bio', None),  # might there is not at all
         create_date=dt.date.today(),
+        is_group=False
     )
     group = Gap.create(
         package_id=request.args.get('package_id', None),
         title=request.args['title'],
         bio=request.args.get('group_bio', None),
         create_date=dt.date.today(),
+        is_group=True
     )
 
     user = User.get_or_none(
@@ -382,7 +385,8 @@ def fetch_gap():
             'package_id': member.gap.package_id,
             'title': member.gap.title,
             'bio': member.gap.bio,
-            'create_date': member.gap.create_date
+            'create_date': member.gap.create_date,
+            'is_group': member.gap.is_group
         }
 
     return jsonify(response)
