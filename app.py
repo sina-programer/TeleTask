@@ -358,16 +358,16 @@ def _fetch():
 def fetch_user():
     mask = _fetch()
     user_fields = User.get_fields()
-    # response = {member.user.id: {f: getattr(member.user, f) for f in user_fields} for member in mask}
-    response = {}
-    for member in mask:
-        response[member.user.id] = {
-            'username': member.user.username,
-            'telegram_id': member.user.telegram_id,
-            'phone_number': member.user.phone_number,
-            'authenticated': member.user.authenticated,
-            'signup_date': member.user.signup_date
-        }
+    response = {member.user.id: {f: getattr(member.user, f) for f in user_fields} for member in mask}
+    # response = {}
+    # for member in mask:
+    #     response[member.user.id] = {
+    #         'username': member.user.username,
+    #         'telegram_id': member.user.telegram_id,
+    #         'phone_number': member.user.phone_number,
+    #         'authenticated': member.user.authenticated,
+    #         'signup_date': member.user.signup_date
+    #     }
 
     return jsonify(response)
 
@@ -376,18 +376,18 @@ def fetch_user():
 def fetch_gap():
     mask = _fetch()
     gap_fields = Gap.get_fields()
-    # response = {member.gap.id: {f: getattr(member.gap, f) for f in gap_fields} for member in mask}
-    response = {}
-    for member in mask:
-        response[member.gap.id] = {
-            'telegram_id': member.gap.telegram_id,
-            'link': member.gap.link,
-            'package_id': member.gap.package_id,
-            'title': member.gap.title,
-            'bio': member.gap.bio,
-            'create_date': member.gap.create_date,
-            'is_group': member.gap.is_group
-        }
+    response = {member.gap.id: {f: getattr(member.gap, f) for f in gap_fields} for member in mask}
+    # response = {}
+    # for member in mask:
+    #     response[member.gap.id] = {
+    #         'telegram_id': member.gap.telegram_id,
+    #         'link': member.gap.link,
+    #         'package_id': member.gap.package_id,
+    #         'title': member.gap.title,
+    #         'bio': member.gap.bio,
+    #         'create_date': member.gap.create_date,
+    #         'is_group': member.gap.is_group
+    #     }
 
     return jsonify(response)
 
