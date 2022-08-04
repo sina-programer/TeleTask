@@ -24,7 +24,7 @@ def check_attributes(data: dict, attrs):
 
 
 def _create_channel():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title', 'package_id']):
+    if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
         return result
 
     task = Task.create(
@@ -34,9 +34,9 @@ def _create_channel():
     )
 
     channel = Gap.create(
-        package_id=request.args['package_id'],
+        package_id=request.args.get('package_id', None),
         title=request.args['channel_title'],
-        bio=request.args.get('channel_bio', ''),  # maybe there is not at all
+        bio=request.args.get('channel_bio', None),  # maybe there is not at all
         create_date=dt.date.today(),
     )
 
@@ -95,7 +95,7 @@ def _create_channel():
 
 
 def _create_group():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title', 'package_id']):
+    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
         return result
 
     task = Task.create(
@@ -105,9 +105,9 @@ def _create_group():
     )
 
     group = Gap.create(
-        package_id=request.args['package_id'],
+        package_id=request.args.get('package_id', None),
         title=request.args['group_title'],
-        bio=request.args.get('group_bio', ''),  # might there is not at all
+        bio=request.args.get('group_bio', None),  # might there is not at all
         create_date=dt.date.today(),
         task=task
     )
@@ -165,7 +165,7 @@ def _create_group():
 
 
 def _create_both():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'title', 'package_id']):
+    if result := check_attributes(request.args, ['username', 'phone_number', 'title']):
         return result
 
     channel_task = Task.create(
@@ -180,15 +180,15 @@ def _create_both():
     )
 
     channel = Gap.create(
-        package_id=request.args['package_id'],
+        package_id=request.args.get('package_id', None),
         title=request.args['title'],
-        bio=request.args.get('channel_bio', ''),  # might there is not at all
+        bio=request.args.get('channel_bio', None),  # might there is not at all
         create_date=dt.date.today(),
     )
     group = Gap.create(
-        package_id=request.args['package_id'],
+        package_id=request.args.get('package_id', None),
         title=request.args['title'],
-        bio=request.args.get('group_bio', ''),
+        bio=request.args.get('group_bio', None),
         create_date=dt.date.today(),
     )
 

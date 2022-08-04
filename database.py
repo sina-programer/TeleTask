@@ -29,9 +29,9 @@ class User(Base):
 
 class Gap(Base):
     telegram_id = pw.CharField(null=True)
-    package_id = pw.IntegerField()
+    package_id = pw.IntegerField(null=True)
     title = pw.CharField()
-    bio = pw.TextField()
+    bio = pw.TextField(null=True)
     link = pw.CharField(null=True)
     create_date = pw.DateField()
 
