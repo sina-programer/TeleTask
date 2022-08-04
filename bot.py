@@ -120,21 +120,25 @@ def add_user(member):
 
 if __name__ == '__main__':
     while True:
-        if task := Task.select().where(Task.status == 'pending').first():
-            member = Member.get(task=task)
-            if task.type == 1:
-                create_channel(member)
+        try:
+            if task := Task.select().where(Task.status == 'pending').first():
+                member = Member.get(task=task)
+                if task.type == 1:
+                    create_channel(member)
 
-            elif task.type == 2:
-                create_group(member)
+                elif task.type == 2:
+                    create_group(member)
 
-            elif task.type == 4:
-                add_user(member)
-
-
-        if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
-            user_entity = client.get_input_entity(user.username)
-            User.update(telegram_id=user_entity.user_id).where(User.username == user.username).execute()
+                elif task.type == 4:
+                    add_user(member)
 
 
-        time.sleep(3)
+            if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
+                user_entity = client.get_input_entity(user.username)
+                User.update(telegram_id=user_entity.user_id).where(User.username == user.username).execute()
+
+        except Exception as error:
+            print(error)
+
+        finally:
+            time.sleep(3)
