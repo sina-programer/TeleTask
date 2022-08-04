@@ -40,15 +40,14 @@ def _create_channel():
         create_date=dt.date.today(),
     )
 
-    phone_number = f"+{request.args['phone_number'][1:]}"
     user = User.get_or_none(
         username=request.args['username'],
-        phone_number=phone_number,
+        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
             username=request.args['username'],
-            phone_number=request.args['phone_number'],
+            phone_number=request.args['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -112,15 +111,14 @@ def _create_group():
         task=task
     )
 
-    phone_number = f"+{request.args['phone_number'][1:]}"
     user = User.get_or_none(
         username=request.args['username'],
-        phone_number=phone_number
+        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
             username=request.args['username'],
-            phone_number=request.args['phone_number'],
+            phone_number=request.args['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -192,15 +190,14 @@ def _create_both():
         create_date=dt.date.today(),
     )
 
-    phone_number = f"+{request.args['phone_number'][1:]}"
     user = User.get_or_none(
         username=request.args['username'],
-        phone_number=phone_number,
+        phone_number=request.args['phone_number'].strip()
     )
     if not user:
         user = User.create(
             username=request.args['username'],
-            phone_number=request.args['phone_number'],
+            phone_number=request.args['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
