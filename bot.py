@@ -1,6 +1,7 @@
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError
-from telethon import TelegramClient, events
-from telethon.tl import functions, types
+from telethon import TelegramClient, events, sync
+from telethon import functions, types
+
 import datetime as dt
 import logging
 import time
