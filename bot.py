@@ -1,7 +1,6 @@
-from telethon.tl.functions.channels import CreateChannelRequest, CheckUsernameRequest, UpdateUsernameRequest, InviteToChannelRequest
 from telethon.errors.rpcerrorlist import PeerFloodError, UserPrivacyRestrictedError, FloodWaitError
-from telethon.tl.functions.messages import AddChatUserRequest, ExportChatInviteRequest
-from telethon import TelegramClient, events, sync
+from telethon import TelegramClient, events
+from telethon.tl import functions, types
 import datetime as dt
 import logging
 import time
@@ -31,20 +30,21 @@ logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
 def create_channel(member):
     try:
-        user = client.get_input_entity(member.user.username)
+        user = client.get_entity(types.PeerUser(member.user.username))
 
-        channel = client(CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=False))
-        channel_id = channel.__dict__["chats"][0].__dict__["id"]
+        channel = client(functions.channels.CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=False))
+        channel_info = channel.__dict__["chats"][0].__dict__
+        channel_id = channel_info["id"]
         channel_link = client(
-            ExportChatInviteRequest(
-                peer=client.get_entity(channel_id),
+            functions.messages.ExportChatInviteRequest(
+                peer=client.get_entity(types.PeerChannel(channel_id)),
                 legacy_revoke_permanent=True,
                 expire_date=None,
                 usage_limit=-1
             )
         ).link
 
-        client(InviteToChannelRequest(channel=channel_id, users=[user]))
+        client(functions.channels.InviteToChannelRequest(channel=channel_id, users=[user]))
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
         Gap.update(telegram_id=channel_id, link=channel_link).where(Gap.id == member.gap.id).execute()
@@ -67,20 +67,21 @@ def create_channel(member):
 
 def create_group(member):
     try:
-        user = client.get_input_entity(member.user.username)
+        user = client.get_entity(types.PeerUser(member.user.username))
 
-        group = client(CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=True))
-        group_id = group.__dict__["chats"][0].__dict__['id']
+        group = client(functions.channels.CreateChannelRequest(member.gap.title, member.gap.bio, megagroup=True))
+        group_info = group.__dict__["chats"][0].__dict__
+        group_id = group_info['id']
         group_link = client(
-            ExportChatInviteRequest(
-                peer=client.get_entity(group_id),
+            functions.messages.ExportChatInviteRequest(
+                peer=client.get_entity(types.PeerChannel(group_id)),
                 legacy_revoke_permanent=True,
                 expire_date=None,
                 usage_limit=-1
             )
         ).link
 
-        client(InviteToChannelRequest(channel=group_id, users=[user]))
+        client(functions.channels.InviteToChannelRequest(channel=group_id, users=[user]))
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
         Gap.update(telegram_id=group_id, link=group_link).where(Gap.id == member.gap.id).execute()
@@ -103,8 +104,8 @@ def create_group(member):
 
 def add_user(member):
     try:
-        user = client.get_input_entity(member.user.username)
-        client(InviteToChannelRequest(channel=int(member.gap.telegram_id), users=[user]))
+        user = client.get_entity(types.PeerUser(member.user.username))
+        client(functions.channels.InviteToChannelRequest(channel=int(member.gap.telegram_id), users=[user]))
         Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
@@ -134,8 +135,8 @@ if __name__ == '__main__':
 
 
             if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
-                user_entity = client.get_input_entity(user.username)
-                User.update(telegram_id=user_entity.user_id).where(User.username == user.username).execute()
+                user_entity = client.get_entity(types.PeerUser(user.username))
+                User.update(telegram_id=user_entity.id).where(User.username == user.username).execute()
 
         except Exception as error:
             print(error)
