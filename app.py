@@ -48,7 +48,7 @@ def _create_channel():
     channel = Gap.create(
         package_id=data.get('package_id', None),
         title=data['channel_title'],
-        bio=data.get('channel_bio', None),  # maybe there is not at all
+        bio=data.get('channel_bio', ''),  # maybe there is not at all
         create_date=dt.date.today(),
         is_group=False,
     )
@@ -120,7 +120,7 @@ def _create_group():
     group = Gap.create(
         package_id=data.get('package_id', None),
         title=data['group_title'],
-        bio=data.get('group_bio', None),  # might there is not at all
+        bio=data.get('group_bio', ''),  # might there is not at all
         create_date=dt.date.today(),
         is_group=True
     )
@@ -190,7 +190,7 @@ def _create_both():
     channel = Gap.create(
         package_id=data.get('package_id', None),
         title=data['channel_title'],
-        bio=data.get('channel_bio', None),  # might there is not at all
+        bio=data.get('channel_bio', ''),  # might there is not at all
         create_date=dt.date.today(),
         is_group=False
     )
