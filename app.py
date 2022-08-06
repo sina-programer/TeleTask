@@ -55,12 +55,12 @@ def _create_channel():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
             username=data['username'],
-            phone_number=data['phone_number'].strip(),
+            phone_number=data['phone_number'],
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -127,12 +127,12 @@ def _create_group():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
             username=data['username'],
-            phone_number=data['phone_number'].strip(),
+            phone_number=data['phone_number'],
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -204,12 +204,12 @@ def _create_both():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number'].strip()
+        phone_number=data['phone_number']
     )
     if not user:
         user = User.create(
             username=data['username'],
-            phone_number=data['phone_number'].strip(),
+            phone_number=data['phone_number'],
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -320,12 +320,12 @@ def add_user():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
             username=data['username'],
-            phone_number=data['phone_number'].strip(),
+            phone_number=data['phone_number'],
             authenticated=False,
             signup_date=dt.date.today()
         )
