@@ -23,26 +23,44 @@ def check_attributes(data: dict, attrs):
             return jsonify({'message': f"<{attr}> is invalid"})
 
 
+def clear_data(data: dict, exceptions=[]):
+    funcs = {
+        'phone_number': lambda x: x.replace('+', '').replace('"', '').strip(),
+        'username': lambda x: x.replace('@', '').replace('"', '').strip(),
+        'general_str': lambda x: x.replace('"', '').strip()
+    }
+
+    for key in data:
+        if key not in exceptions:
+            if key in funcs:
+                data[key] = funcs[key](data[key])
+            else:
+                data[key] = funcs['general_str'](data[key])
+
+    return data
+
+
 def _create_channel():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'channel_title']):
+    data = clear_data(dict(request.args))
+    if result := check_attributes(data, ['username', 'phone_number', 'channel_title']):
         return result
 
     channel = Gap.create(
-        package_id=request.args.get('package_id', None),
-        title=request.args['channel_title'],
-        bio=request.args.get('channel_bio', None),  # maybe there is not at all
+        package_id=data.get('package_id', None),
+        title=data['channel_title'],
+        bio=data.get('channel_bio', None),  # maybe there is not at all
         create_date=dt.date.today(),
         is_group=False,
     )
 
     user = User.get_or_none(
-        username=request.args['username'],
-        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        username=data['username'],
+        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
-            username=request.args['username'],
-            phone_number=request.args['phone_number'].strip(),
+            username=data['username'],
+            phone_number=data['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -95,25 +113,26 @@ def _create_channel():
 
 
 def _create_group():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title']):
+    data = clear_data(dict(request.args))
+    if result := check_attributes(data, ['username', 'phone_number', 'group_title']):
         return result
 
     group = Gap.create(
-        package_id=request.args.get('package_id', None),
-        title=request.args['group_title'],
-        bio=request.args.get('group_bio', None),  # might there is not at all
+        package_id=data.get('package_id', None),
+        title=data['group_title'],
+        bio=data.get('group_bio', None),  # might there is not at all
         create_date=dt.date.today(),
         is_group=True
     )
 
     user = User.get_or_none(
-        username=request.args['username'],
-        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        username=data['username'],
+        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
-            username=request.args['username'],
-            phone_number=request.args['phone_number'].strip(),
+            username=data['username'],
+            phone_number=data['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -164,32 +183,33 @@ def _create_group():
 
 
 def _create_both():
-    if result := check_attributes(request.args, ['username', 'phone_number', 'group_title', 'channel_title']):
+    data = clear_data(dict(request.args))
+    if result := check_attributes(data, ['username', 'phone_number', 'group_title', 'channel_title']):
         return result
 
     channel = Gap.create(
-        package_id=request.args.get('package_id', None),
-        title=request.args['channel_title'],
-        bio=request.args.get('channel_bio', None),  # might there is not at all
+        package_id=data.get('package_id', None),
+        title=data['channel_title'],
+        bio=data.get('channel_bio', None),  # might there is not at all
         create_date=dt.date.today(),
         is_group=False
     )
     group = Gap.create(
-        package_id=request.args.get('package_id', None),
-        title=request.args['group_title'],
-        bio=request.args.get('group_bio', None),
+        package_id=data.get('package_id', None),
+        title=data['group_title'],
+        bio=data.get('group_bio', None),
         create_date=dt.date.today(),
         is_group=True
     )
 
     user = User.get_or_none(
-        username=request.args['username'],
-        phone_number=request.args['phone_number'].strip()
+        username=data['username'],
+        phone_number=data['phone_number'].strip()
     )
     if not user:
         user = User.create(
-            username=request.args['username'],
-            phone_number=request.args['phone_number'].strip(),
+            username=data['username'],
+            phone_number=data['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -270,7 +290,8 @@ def home():
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
-    task_type = request.args.get('task_type', None)
+    data = clear_data(dict(request.args))
+    task_type = data.get('task_type', None)
     if not task_type:
         return jsonify({'message': 'Please enter task type!'})
 
@@ -290,20 +311,21 @@ def create():
 
 @app.route("/add_user", methods=['GET', 'POST'])
 def add_user():
-    if result := check_attributes(request.args, ['username', 'phone_number', ['channel_id', 'group_id']]):
+    data = clear_data(dict(request.args))
+    if result := check_attributes(data, ['username', 'phone_number', ['channel_id', 'group_id']]):
         return result
 
-    if expire_date := request.args.get('expire_date', None):
+    if expire_date := data.get('expire_date', None):
         expire_date = dt.datetime.strptime(expire_date, '%d_%m_%Y').date()
 
     user = User.get_or_none(
-        username=request.args['username'],
-        phone_number=request.args['phone_number'].strip()  # save without space ' ' at first when sent '+'
+        username=data['username'],
+        phone_number=data['phone_number'].strip()  # save without space ' ' at first when sent '+'
     )
     if not user:
         user = User.create(
-            username=request.args['username'],
-            phone_number=request.args['phone_number'].strip(),
+            username=data['username'],
+            phone_number=data['phone_number'].strip(),
             authenticated=False,
             signup_date=dt.date.today()
         )
@@ -314,7 +336,7 @@ def add_user():
         "severity": "info"
     }
 
-    if channel_id := request.args.get('channel_id', None):
+    if channel_id := data.get('channel_id', None):
         channel_task = Task.create(
             type=4,
             status='pending',
@@ -324,7 +346,7 @@ def add_user():
 
         channel_member = Member.create(
             user=user,
-            gap=Gap.get_or_none(telegram_id=channel_id),
+            gap=Gap.get(telegram_id=channel_id),
             is_admin=False,
             task=channel_task,
             add_date=dt.date.today(),
@@ -332,7 +354,7 @@ def add_user():
         )
 
 
-    if group_id := request.args.get('group_id', None):
+    if group_id := data.get('group_id', None):
         group_task = Task.create(
             type=4,
             status='pending',
@@ -354,11 +376,11 @@ def add_user():
 
 
     condition = False
-    if request.args.get('channel_id', None):
+    if data.get('channel_id', None):
         channel_member = Member.get_by_id(channel_member.id)
         done_response['added_channel_id'] = channel_member.gap.telegram_id
         condition = condition or channel_member.task.status == 'done'
-    if request.args.get('group_id', None):
+    if data.get('group_id', None):
         group_member = Member.get_by_id(group_member.id)
         done_response['added_group_id'] = group_member.gap.telegram_id
         condition = condition or group_member.task.status == 'done'
@@ -389,8 +411,9 @@ def _get_mask(prefix, Model):
     this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
     """
 
+    data = dict(request.args)
     fields = Model.get_fields()
-    if params := {key.removeprefix(prefix): value for key, value in request.args.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
+    if params := {key.removeprefix(prefix): value for key, value in data.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
         model = Model.get_or_none(**params)  # get obj instance by <params>
         if model:
             return Model.id == model.id
