@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, make_response
 import datetime as dt
 import time
 
-from database import User, Task, Gap, Member, Verify 
+from database import User, Task, Gap, Member
 
 
 def check_attributes(data: dict, attrs):
