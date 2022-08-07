@@ -504,7 +504,7 @@ def verify():
        )
     while True:
         time.sleep(3)
-        task = Task.get_by_id(verify.id)
+        task = Task.get_by_id(verify.task.id)
         if task.task.status != 'pending':
             break
     if verify.task.status == 'done':
