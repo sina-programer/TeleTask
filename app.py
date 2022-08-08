@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, make_response
 import datetime as dt
 import time
 
-from database import User, Task, Gap, Member
+from database import User, Task, Gap, Member, Verify 
 
 
 def check_attributes(data: dict, attrs):
@@ -41,7 +41,7 @@ def clear_data(data: dict, exceptions=[]):
 
 
 def _create_channel():
-    data = clear_data(dict(request.args))
+    data = clear_data(dict(request.values))
     if result := check_attributes(data, ['username', 'phone_number', 'channel_title']):
         return result
 
@@ -113,7 +113,7 @@ def _create_channel():
 
 
 def _create_group():
-    data = clear_data(dict(request.args))
+    data = clear_data(dict(request.values))
     if result := check_attributes(data, ['username', 'phone_number', 'group_title']):
         return result
 
@@ -183,7 +183,7 @@ def _create_group():
 
 
 def _create_both():
-    data = clear_data(dict(request.args))
+    data = clear_data(dict(request.values))
     if result := check_attributes(data, ['username', 'phone_number', 'group_title', 'channel_title']):
         return result
 
@@ -285,12 +285,12 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    return "home"
+    return "<h1>Home</h1>"
 
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
-    data = clear_data(dict(request.args))
+    data = clear_data(dict(request.values))
     task_type = data.get('task_type', None)
     if not task_type:
         return jsonify({'message': 'Please enter task type!'})
@@ -311,7 +311,7 @@ def create():
 
 @app.route("/add_user", methods=['GET', 'POST'])
 def add_user():
-    data = clear_data(dict(request.args))
+    data = clear_data(dict(request.values))
     if result := check_attributes(data, ['username', 'phone_number', ['channel_id', 'group_id']]):
         return result
 
@@ -411,7 +411,7 @@ def _get_mask(prefix, Model):
     this function filter parameters and give only parameters who starts with <prefix> and exists in <Model> fields
     """
 
-    data = dict(request.args)
+    data = dict(request.values)
     fields = Model.get_fields()
     if params := {key.removeprefix(prefix): value for key, value in data.items() if (prefix in key) and key.removeprefix(prefix) in fields}:
         model = Model.get_or_none(**params)  # get obj instance by <params>
@@ -474,10 +474,61 @@ def fetch_gap():
     #         'bio': member.gap.bio,
     #         'create_date': member.gap.create_date,
     #         'is_group': member.gap.is_group
-    #     }
+    #     }!
 
     return jsonify(response)
 
+
+@app.route('/verify/')
+def verify():
+    data = clear_data(dict(request.values), ['code'])
+    user = User.get_or_none(
+        phone_number=data['phone_number']
+       )
+    if not user:
+        user = User.create(
+           # username=data['username'],
+            phone_number=data['phone_number'],
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
+    verify_task = Task.create(
+        type=5,
+        status='pending',
+        create_time=dt.datetime.now()
+    )
+    verify = Verify.create(
+        phone_number=data['phone_number'],
+        code=data['code'],
+        task=verify_task
+       )
+    while True:
+        time.sleep(3)
+        task = Task.get_by_id(verify.task.id)
+        if task.task.status != 'pending':
+            break
+    if verify.task.status == 'done':
+        return make_response(
+            jsonify({
+                'task_type': 5,
+                'message': '201 User authenticated',
+                'phone_number': verify.phone_number,
+                'code': verify.code
+            }),
+            201
+        )
+    else:
+        return make_response(
+            jsonify({
+                "message": '500 User Not Authenticated',
+                "severity": "danger"
+            }),
+            500
+        )
+    
+    
+        
+    
 
 
 if __name__ == '__main__':

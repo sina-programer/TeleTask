@@ -21,7 +21,7 @@ class Base(pw.Model):
 
 class User(Base):
     telegram_id = pw.CharField(unique=True, null=True)
-    username = pw.CharField()
+    username = pw.CharField(null=True)
     phone_number = pw.CharField()
     authenticated = pw.BooleanField()
     signup_date = pw.DateField()
@@ -52,9 +52,16 @@ class Member(Base):
     add_date = pw.DateField()
     expire_date = pw.DateField(null=True)
 
+class Verify(Base):
+    phone_number = pw.CharField()
+    code = pw.CharField
+    status = pw.CharField()
+    task = pw.ForeignKeyField(Task)
 
 
-TABLES = [User, Gap, Task, Member]
+
+
+TABLES = [User, Gap, Task, Member, Verify]
 
 for table in TABLES:  # Create tables
     not db.table_exists(table.__name__) and db.create_tables([table])
