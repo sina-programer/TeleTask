@@ -52,12 +52,11 @@ class Member(Base):
     add_date = pw.DateField()
     expire_date = pw.DateField(null=True)
 
-class Verify(Base):
-    phone_number = pw.CharField()
-    code = pw.CharField
-    status = pw.CharField()
-    task = pw.ForeignKeyField(Task)
 
+class Verify(Base):
+    user = pw.ForeignKeyField(User)
+    code = pw.CharField()
+    task = pw.ForeignKeyField(Task)
 
 
 
