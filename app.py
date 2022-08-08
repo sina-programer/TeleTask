@@ -197,7 +197,7 @@ def _create_both():
     group = Gap.create(
         package_id=data.get('package_id', None),
         title=data['group_title'],
-        bio=data.get('group_bio', None),
+        bio=data.get('group_bio', ''),
         create_date=dt.date.today(),
         is_group=True
     )
@@ -474,49 +474,47 @@ def fetch_gap():
     #         'bio': member.gap.bio,
     #         'create_date': member.gap.create_date,
     #         'is_group': member.gap.is_group
-    #     }!
+    #     }
 
     return jsonify(response)
 
 
-@app.route('/verify/')
+@app.route('/verify', methods=['GET', 'POST'])
 def verify():
-    data = clear_data(dict(request.values), ['code'])
-    user = User.get_or_none(
-        phone_number=data['phone_number']
-       )
-    if not user:
-        user = User.create(
-           # username=data['username'],
-            phone_number=data['phone_number'],
-            authenticated=False,
-            signup_date=dt.date.today()
-        )
-    verify_task = Task.create(
+    data = clear_data(dict(request.values))
+    if result := check_attributes(data, ['phone_number', 'code']):
+        return result
+
+    user = User.get(phone_number=data['phone_number'])
+    task = Task.create(
         type=5,
         status='pending',
         create_time=dt.datetime.now()
     )
+
     verify = Verify.create(
-        phone_number=data['phone_number'],
+        user=user,
         code=data['code'],
-        task=verify_task
+        task=task
        )
+
     while True:
         time.sleep(3)
-        task = Task.get_by_id(verify.task.id)
-        if task.task.status != 'pending':
+        verify = Verify.get_by_id(verify.id)
+        if verify.task.status != 'pending':
             break
+
     if verify.task.status == 'done':
         return make_response(
             jsonify({
                 'task_type': 5,
                 'message': '201 User authenticated',
-                'phone_number': verify.phone_number,
+                'phone_number': verify.user.phone_number,
                 'code': verify.code
             }),
             201
         )
+
     else:
         return make_response(
             jsonify({
@@ -525,10 +523,7 @@ def verify():
             }),
             500
         )
-    
-    
-        
-    
+
 
 
 if __name__ == '__main__':
