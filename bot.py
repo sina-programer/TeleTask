@@ -6,7 +6,7 @@ import datetime as dt
 import logging
 import time
 
-from database import User, Task, Gap, Member
+from database import User, Task, Gap, Member, Verify
 
 import configparser
 
@@ -120,6 +120,11 @@ def add_user(member):
         logging.exception("Unexpected Error")
 
 
+def verify_user(verify):
+    pass  # verify user here
+
+
+
 if __name__ == '__main__':
     while True:
         try:
@@ -134,6 +139,8 @@ if __name__ == '__main__':
                 elif task.type == 4:
                     add_user(member)
 
+                elif task.type == 5:
+                    verify_user(Verify.get(task=task))
 
             if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
                 user_entity = client.get_entity(types.PeerUser(user.username))
