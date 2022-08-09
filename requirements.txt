@@ -1,3 +1,4 @@
 telethon
 flask
 peewee
+requests
