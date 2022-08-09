@@ -5,6 +5,11 @@ import time
 
 from database import User, Task, Gap, Member, Verify 
 
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 
 def check_attributes(data: dict, attrs):
     """
@@ -19,12 +24,12 @@ def check_attributes(data: dict, attrs):
         if isinstance(attr, list):  # if <attr> is a list, existing one of them is enough
             if all(not data.get(a, None) for a in attr):
                 response = {'message': f"you have to enter at least one of {attr}"}
-                requests.post('http://176.9.37.133/create/callback', json=response)
+                requests.post(config["Site"]["host"] + '/create/callback', json=response)
                 return jsonify(response)
 
         elif not data.get(attr, None):
             response = {'message': f"<{attr}> is invalid"}
-            requests.post('http://176.9.37.133/create/callback', json=response)
+            requests.post(config["Site"]["host"] + '/create/callback', json=response)
             return jsonify(response)
 
 
@@ -104,7 +109,7 @@ def _create_channel():
                 'bio': member.gap.bio
         }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             201
@@ -116,7 +121,7 @@ def _create_channel():
                 "severity": "danger"
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             500
@@ -180,7 +185,7 @@ def _create_group():
                 'bio': member.gap.bio
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             201
@@ -192,7 +197,7 @@ def _create_group():
                 "severity": "danger"
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             500
@@ -291,7 +296,7 @@ def _create_both():
                 'severity': "info"
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             201
@@ -303,7 +308,7 @@ def _create_both():
                 "severity": "danger"
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             500
@@ -324,7 +329,7 @@ def create():
     task_type = data.get('task_type', None)
     if not task_type:
         response = {'message': 'Please enter task type!'}
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return jsonify(response)
 
 
@@ -339,7 +344,7 @@ def create():
 
     else:
         response = {"message": 'Please enter a valid task type!'}
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return jsonify(response)
 
 
@@ -420,7 +425,7 @@ def add_user():
         condition = condition or group_member.task.status == 'done'
 
     if condition:
-        requests.post('http://176.9.37.133/create/callback', json=done_response)
+        requests.post('http://parvaneh.app/create/callback', json=done_response)
         return make_response(
             jsonify(done_response),
             200
@@ -432,7 +437,7 @@ def add_user():
                 "severity": "danger"
                 }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             500
@@ -494,7 +499,7 @@ def fetch_user():
     #         'signup_date': member.user.signup_date
     #     }
 
-    requests.post('http://176.9.37.133/create/callback', json=response)
+    requests.post(config["Site"]["host"] + '/create/callback', json=response)
     return jsonify(response)
 
 
@@ -515,7 +520,7 @@ def fetch_gap():
     #         'is_group': member.gap.is_group
     #     }
 
-    requests.post('http://176.9.37.133/create/callback', json=response)
+    requests.post(config["Site"]["host"] + '/create/callback', json=response)
     return jsonify(response)
 
 
@@ -552,7 +557,7 @@ def verify():
                 'code': verify.code
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             201
@@ -564,7 +569,7 @@ def verify():
                 "severity": "danger"
             }
 
-        requests.post('http://176.9.37.133/create/callback', json=response)
+        requests.post(config["Site"]["host"] + '/create/callback', json=response)
         return make_response(
             jsonify(response),
             500
