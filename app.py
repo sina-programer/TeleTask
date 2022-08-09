@@ -251,11 +251,18 @@ def _create_both():
     group_member = Member.get_by_id(group_member.id)
     channel_member = Member.get_by_id(channel_member.id)
 
-    if group_member.task.status == 'done' or channel_member.task.status == 'done':
+    created_gaps = []
+    if channel_member.task.status == 'done':
+        created_gaps.append('Channel')
+    if group_member.task.status == 'done':
+        created_gaps.append('Group')
+    created_gaps = ' and '.join(created_gaps)
+
+    if created_gaps:
         return make_response(
             jsonify({
                 'task_type': 3,
-                'message': '201 Channel and Group created',
+                'message': f'201 {created_gaps} created',
                 'package_id': channel_member.gap.package_id,
                 'channel_title': channel_member.gap.title,
                 'channel_id': channel_member.gap.telegram_id,
