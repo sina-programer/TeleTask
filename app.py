@@ -50,6 +50,25 @@ def clear_data(data: dict, exceptions=[]):
     return data
 
 
+def get_user(data):
+    params = {}
+    for param in ['username', 'phone_number']:
+        if param in data:
+            params[param] = data[param]
+
+    user = User.get_or_none(**params)
+    if not user:
+        user = User.create(
+            username=data.get('username', ''),
+            phone_number=data['phone_number'],
+            authenticated=False,
+            signup_date=dt.date.today()
+        )
+
+
+    return user
+
+
 def _create_channel():
     data = clear_data(dict(request.values))
     if result := check_attributes(data, ['username', 'phone_number', 'channel_title']):
@@ -63,17 +82,7 @@ def _create_channel():
         is_group=False,
     )
 
-    user = User.get_or_none(
-        username=data['username'],
-        phone_number=data['phone_number']
-    )
-    if not user:
-        user = User.create(
-            username=data['username'],
-            phone_number=data['phone_number'],
-            authenticated=False,
-            signup_date=dt.date.today()
-        )
+    user = get_user(data)
 
     task = Task.create(
         type=1,
@@ -141,17 +150,7 @@ def _create_group():
         is_group=True
     )
 
-    user = User.get_or_none(
-        username=data['username'],
-        phone_number=data['phone_number']
-    )
-    if not user:
-        user = User.create(
-            username=data['username'],
-            phone_number=data['phone_number'],
-            authenticated=False,
-            signup_date=dt.date.today()
-        )
+    user = get_user(data)
 
     task = Task.create(
         type=2,
@@ -224,17 +223,7 @@ def _create_both():
         is_group=True
     )
 
-    user = User.get_or_none(
-        username=data['username'],
-        phone_number=data['phone_number']
-    )
-    if not user:
-        user = User.create(
-            username=data['username'],
-            phone_number=data['phone_number'],
-            authenticated=False,
-            signup_date=dt.date.today()
-        )
+    user = get_user(data)
 
     group_task = Task.create(
         type=2,
@@ -357,17 +346,7 @@ def add_user():
     if expire_date := data.get('expire_date', None):
         expire_date = dt.datetime.strptime(expire_date, '%d_%m_%Y').date()
 
-    user = User.get_or_none(
-        username=data['username'],
-        phone_number=data['phone_number']  # save without space ' ' at first when sent '+'
-    )
-    if not user:
-        user = User.create(
-            username=data['username'],
-            phone_number=data['phone_number'],
-            authenticated=False,
-            signup_date=dt.date.today()
-        )
+    user = get_user(data)
 
     tasks = []
     done_response = {
@@ -530,7 +509,8 @@ def verify():
     if result := check_attributes(data, ['phone_number', 'code']):
         return result
 
-    user = User.get(phone_number=data['phone_number'])
+    user = get_user(data)
+
     task = Task.create(
         type=5,
         status='pending',

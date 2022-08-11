@@ -21,7 +21,7 @@ class Base(pw.Model):
 
 class User(Base):
     telegram_id = pw.CharField(unique=True, null=True)
-    username = pw.CharField()
+    username = pw.CharField(null=True)
     phone_number = pw.CharField()
     authenticated = pw.BooleanField()
     signup_date = pw.DateField()
