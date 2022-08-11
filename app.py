@@ -318,7 +318,7 @@ def _create_both():
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def home():
     return "<h1>Home</h1>"
 
