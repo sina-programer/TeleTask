@@ -349,62 +349,60 @@ def add_user():
     user = get_user(data)
 
     tasks = []
+    members = {}
     done_response = {
         "message": '200 user added',
         "severity": "info"
     }
 
-    if channel_id := data.get('channel_id', None):
-        channel_task = Task.create(
-            type=4,
-            status='pending',
-            create_time=dt.datetime.now()
-        )
-        tasks.append(channel_task)
+    for param in ['channel_id', 'group_id']:
+        if gap_id := data.get(param, None):
+            task = Task.create(
+                type=4,
+                status='pending',
+                create_time=dt.datetime.now()
+            )
+            tasks.append(task)
 
-        channel_member = Member.create(
-            user=user,
-            gap=Gap.get(telegram_id=channel_id),
-            is_admin=False,
-            task=channel_task,
-            add_date=dt.date.today(),
-            expire_date=expire_date
-        )
+            if not (gap := Gap.get_or_none(telegram_id=gap_id)):
+                response = {
+                    "message": f'500 Could not find <{gap_id}> !',
+                    "severity": "danger"
+                }
 
+                requests.post(config["Site"]["host"] + '/create/callback', data=response)
+                return make_response(
+                    jsonify(response),
+                    500
+                )
 
-    if group_id := data.get('group_id', None):
-        group_task = Task.create(
-            type=4,
-            status='pending',
-            create_time=dt.datetime.now()
-        )
-        tasks.append(group_task)
+            member = Member.create(
+                user=user,
+                gap=gap,
+                is_admin=False,
+                task=task,
+                add_date=dt.date.today(),
+                expire_date=expire_date
+            )
+            members[param] = member
 
-        group_member = Member.create(
-            user=user,
-            gap=Gap.get_or_none(telegram_id=group_id),
-            is_admin=False,
-            task=group_task,
-            add_date=dt.date.today(),
-            expire_date=expire_date
-        )
+        else:
+            members[param] = None
+
 
     while Member.select().where(Member.task.in_(tasks)).join(Task).where(Task.status == 'pending').exists():
         time.sleep(3)
 
 
     condition = False
-    if data.get('channel_id', None):
-        channel_member = Member.get_by_id(channel_member.id)
-        done_response['added_channel_id'] = channel_member.gap.telegram_id
-        condition = condition or channel_member.task.status == 'done'
-    if data.get('group_id', None):
-        group_member = Member.get_by_id(group_member.id)
-        done_response['added_group_id'] = group_member.gap.telegram_id
-        condition = condition or group_member.task.status == 'done'
+    for param, member in members.items():
+        if member:
+            member = Member.get_by_id(member.id)
+            done_response[f'added_{param}'] = member.gap.telegram_id
+            condition = condition or member.task.status == 'done'
 
     if condition:
-        requests.post('http://parvaneh.app/create/callback', json=done_response)
+        requests.post(config["Site"]["host"] + '/create/callback', data=done_response)
         return make_response(
             jsonify(done_response),
             200
