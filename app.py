@@ -357,13 +357,6 @@ def add_user():
 
     for param in ['channel_id', 'group_id']:
         if gap_id := data.get(param, None):
-            task = Task.create(
-                type=4,
-                status='pending',
-                create_time=dt.datetime.now()
-            )
-            tasks.append(task)
-
             if not (gap := Gap.get_or_none(telegram_id=gap_id)):
                 response = {
                     "message": f'500 Could not find <{gap_id}> !',
@@ -375,6 +368,13 @@ def add_user():
                     jsonify(response),
                     500
                 )
+
+            task = Task.create(
+                type=4,
+                status='pending',
+                create_time=dt.datetime.now()
+            )
+            tasks.append(task)
 
             member = Member.create(
                 user=user,
