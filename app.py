@@ -118,7 +118,8 @@ def _create_channel():
                 'bio': member.gap.bio
         }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response['callback_code'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -184,7 +185,8 @@ def _create_group():
                 'bio': member.gap.bio
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response['callback_code'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -285,7 +287,8 @@ def _create_both():
                 'severity': "info"
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response['callback_code'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -402,7 +405,8 @@ def add_user():
             condition = condition or member.task.status == 'done'
 
     if condition:
-        requests.post(config["Site"]["host"] + '/create/callback', data=done_response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=done_response)
+        done_response['callback_code'] = res.status_code
         return make_response(
             jsonify(done_response),
             200
@@ -476,7 +480,8 @@ def fetch_user():
     #         'signup_date': member.user.signup_date
     #     }
 
-    requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    response['callback_code'] = res.status_code
     return jsonify(response)
 
 
@@ -497,7 +502,8 @@ def fetch_gap():
     #         'is_group': member.gap.is_group
     #     }
 
-    requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    response['callback_code'] = res.status_code
     return jsonify(response)
 
 
@@ -535,7 +541,8 @@ def verify():
                 'code': verify.code
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response['callback_code'] = res.status_code
         return make_response(
             jsonify(response),
             201
