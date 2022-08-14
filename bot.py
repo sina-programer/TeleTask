@@ -33,6 +33,7 @@ def delete_created_gaps():
     gap_fields = Gap.get_fields()
 
     for gap in Gap.select():
+        time.sleep(10)
         if gap.telegram_id:
             try:
                 gap_info = '\n'.join([f'{f}: {str(getattr(gap, f))}' for f in gap_fields])
@@ -43,10 +44,10 @@ def delete_created_gaps():
                     )
                 )
 
-                client.send_message('me', f'Gap deleted! \n\n{gap_info}')
+                client.send_message('sina_programer', f'Gap deleted! \n\n{gap_info}')
 
             except Exception as error:
-                client.send_message('me', f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
+                client.send_message('sina_programer', f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
 
 
 def create_channel(member):
