@@ -46,8 +46,6 @@ def delete_created_gaps(event):
             break
 
         if gap.telegram_id:
-            counter += 1
-            time.sleep(10)
             try:
                 gap_info = '\n'.join([f'{f}: {str(getattr(gap, f))}' for f in gap_fields])
                 gap_entity = client.get_entity(types.PeerChannel(int(gap.telegram_id)))
@@ -57,10 +55,16 @@ def delete_created_gaps(event):
                     )
                 )
 
+                client.send_message(event.message.chat_id, f'Gap deleted! \n\n{gap_info}')
                 client.send_message('sina_programer', f'Gap deleted! \n\n{gap_info}')
 
             except Exception as error:
+                client.send_message(event.message.chat_id, f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
                 client.send_message('sina_programer', f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
+
+            finally:
+                counter += 1
+                time.sleep(10)
 
 
 def create_channel(member):
