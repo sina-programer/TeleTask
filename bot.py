@@ -163,7 +163,7 @@ def verify_user(verify):
 if __name__ == '__main__':
     while True:
         try:
-            if task := Task.select().where(Task.status == 'pending').first():
+            for task in Task.select().where(Task.status == 'pending'):
                 member = Member.get(task=task)
                 if task.type == 1:
                     create_channel(member)
@@ -177,7 +177,7 @@ if __name__ == '__main__':
                 elif task.type == 5:
                     verify_user(Verify.get(task=task))
 
-            if user := User.select().where(User.telegram_id == None).first():  # set User.telegram_id for new users
+            for user in User.select().where(User.telegram_id == None):  # set User.telegram_id for new users
                 user_entity = client.get_entity(types.PeerUser(user.username))
                 User.update(telegram_id=user_entity.id).where(User.username == user.username).execute()
 
