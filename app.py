@@ -119,7 +119,7 @@ def _create_channel():
         }
 
         res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-        response['callback_code'] = res.status_code
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -131,7 +131,8 @@ def _create_channel():
                 "severity": "danger"
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -186,7 +187,7 @@ def _create_group():
             }
 
         res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-        response['callback_code'] = res.status_code
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -198,7 +199,9 @@ def _create_group():
                 "severity": "danger"
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response[0] = res.status_code
+
         return make_response(
             jsonify(response),
             500
@@ -288,7 +291,7 @@ def _create_both():
             }
 
         res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-        response['callback_code'] = res.status_code
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -300,7 +303,8 @@ def _create_both():
                 "severity": "danger"
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -406,7 +410,7 @@ def add_user():
 
     if condition:
         res = requests.post(config["Site"]["host"] + '/create/callback', data=done_response)
-        done_response['callback_code'] = res.status_code
+        done_response[0] = res.status_code
         return make_response(
             jsonify(done_response),
             200
@@ -418,7 +422,8 @@ def add_user():
                 "severity": "danger"
                 }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -481,7 +486,7 @@ def fetch_user():
     #     }
 
     res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-    response['callback_code'] = res.status_code
+    response[0] = res.status_code
     return jsonify(response)
 
 
@@ -503,7 +508,7 @@ def fetch_gap():
     #     }
 
     res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-    response['callback_code'] = res.status_code
+    response[0] = res.status_code
     return jsonify(response)
 
 
@@ -542,7 +547,7 @@ def verify():
             }
 
         res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
-        response['callback_code'] = res.status_code
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -554,7 +559,8 @@ def verify():
                 "severity": "danger"
             }
 
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        response[0] = res.status_code
         return make_response(
             jsonify(response),
             500
