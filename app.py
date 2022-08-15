@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, make_response
 import datetime as dt
 import requests
 import time
+import pytz
 
 from database import User, Task, Gap, Member, Verify 
 
@@ -9,6 +10,11 @@ import configparser
 
 config = configparser.ConfigParser()
 config.read('config.ini')
+
+tehran_tz = pytz.timezone('Asia/Tehran')
+
+def now():
+    return dt.datetime.now(tehran_tz)
 
 
 def check_attributes(data: dict, attrs):
@@ -62,7 +68,7 @@ def get_user(data):
             username=data.get('username', ''),
             phone_number=data['phone_number'],
             authenticated=False,
-            signup_date=dt.date.today()
+            signup_date=now().date()
         )
 
 
@@ -78,7 +84,7 @@ def _create_channel():
         package_id=data.get('package_id', None),
         title=data['channel_title'],
         bio=data.get('channel_bio', ''),  # maybe there is not at all
-        create_date=dt.date.today(),
+        create_date=now().date(),
         is_group=False,
     )
 
@@ -87,7 +93,7 @@ def _create_channel():
     task = Task.create(
         type=1,
         status='pending',
-        create_time=dt.datetime.now()
+        create_time=now()
     )
 
     member = Member.create(
@@ -95,7 +101,7 @@ def _create_channel():
         gap=channel,
         is_admin=True,
         task=task,
-        add_date=dt.date.today()
+        add_date=now().date()
     )
 
 
@@ -148,7 +154,7 @@ def _create_group():
         package_id=data.get('package_id', None),
         title=data['group_title'],
         bio=data.get('group_bio', ''),  # might there is not at all
-        create_date=dt.date.today(),
+        create_date=now().date(),
         is_group=True
     )
 
@@ -157,7 +163,7 @@ def _create_group():
     task = Task.create(
         type=2,
         status='pending',
-        create_time=dt.datetime.now()
+        create_time=now()
     )
 
     member = Member.create(
@@ -165,7 +171,7 @@ def _create_group():
         gap=group,
         is_admin=True,
         task=task,
-        add_date=dt.date.today()
+        add_date=now().date()
     )
 
     while True:
@@ -217,14 +223,14 @@ def _create_both():
         package_id=data.get('package_id', None),
         title=data['channel_title'],
         bio=data.get('channel_bio', ''),  # might there is not at all
-        create_date=dt.date.today(),
+        create_date=now().date(),
         is_group=False
     )
     group = Gap.create(
         package_id=data.get('package_id', None),
         title=data['group_title'],
         bio=data.get('group_bio', ''),
-        create_date=dt.date.today(),
+        create_date=now().date(),
         is_group=True
     )
 
@@ -233,27 +239,27 @@ def _create_both():
     group_task = Task.create(
         type=2,
         status='pending',
-        create_time=dt.datetime.now()
+        create_time=now()
     )
     group_member = Member.create(
         user=user,
         gap=group,
         is_admin=True,
         task=group_task,
-        add_date=dt.date.today()
+        add_date=now().date()
     )
 
     channel_task = Task.create(
         type=1,
         status='pending',
-        create_time=dt.datetime.now()
+        create_time=now()
     )
     channel_member = Member.create(
         user=user,
         gap=channel,
         is_admin=True,
         task=channel_task,
-        add_date=dt.date.today()
+        add_date=now().date()
     )
 
 
@@ -379,7 +385,7 @@ def add_user():
             task = Task.create(
                 type=4,
                 status='pending',
-                create_time=dt.datetime.now()
+                create_time=now()
             )
             tasks.append(task)
 
@@ -388,7 +394,7 @@ def add_user():
                 gap=gap,
                 is_admin=False,
                 task=task,
-                add_date=dt.date.today(),
+                add_date=now().date(),
                 expire_date=expire_date
             )
             members[param] = member
@@ -523,7 +529,7 @@ def verify():
     task = Task.create(
         type=5,
         status='pending',
-        create_time=dt.datetime.now()
+        create_time=now()
     )
 
     verify = Verify.create(

@@ -5,6 +5,7 @@ from telethon import functions, types
 import datetime as dt
 import logging
 import time
+import pytz
 
 from database import User, Task, Gap, Member, Verify
 
@@ -28,6 +29,10 @@ client.start()
 
 logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
+tehran_tz = pytz.timezone('Asia/Tehran')
+
+def now():
+    return dt.datetime.now(tehran_tz)
 
 @client.on(events.NewMessage(pattern=r'delete gap*'))
 def delete_created_gaps(event):
@@ -87,7 +92,7 @@ def create_channel(member):
         client.edit_admin(channel_id, user, is_admin=True, add_admins=False, invite_users=False)
 
         Gap.update(telegram_id=channel_id, link=channel_link).where(Gap.id == member.gap.id).execute()
-        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+        Task.update(status='done', done_time=now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -101,7 +106,7 @@ def create_channel(member):
 
     finally:
         if Task.select().where(Task.id == member.task.id, Task.status != 'done').exists():
-            Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+            Task.update(status='failed', done_time=now()).where(Task.id == member.task.id).execute()
 
 
 def create_group(member):
@@ -124,7 +129,7 @@ def create_group(member):
         client.edit_admin(group_id, user, is_admin=True, add_admins=False)
 
         Gap.update(telegram_id=group_id, link=group_link).where(Gap.id == member.gap.id).execute()
-        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+        Task.update(status='done', done_time=now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
@@ -138,7 +143,7 @@ def create_group(member):
 
     finally:
         if Task.select().where(Task.id == member.task.id, Task.status != 'done').exists():
-            Task.update(status='failed', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+            Task.update(status='failed', done_time=now()).where(Task.id == member.task.id).execute()
 
 
 def add_user(member):
@@ -146,7 +151,7 @@ def add_user(member):
         user = client.get_entity(types.PeerUser(member.user.username))
         gap = client.get_entity(types.PeerChannel(int(member.gap.telegram_id)))
         client(functions.channels.InviteToChannelRequest(channel=gap, users=[user]))
-        Task.update(status='done', done_time=dt.datetime.now()).where(Task.id == member.task.id).execute()
+        Task.update(status='done', done_time=now()).where(Task.id == member.task.id).execute()
 
     except PeerFloodError:
         logging.exception("Getting Flood Error from telegram. Script is stopping now. Please try again after some time.")
