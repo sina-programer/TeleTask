@@ -29,14 +29,10 @@ def check_attributes(data: dict, attrs):
     for attr in attrs:
         if isinstance(attr, list):  # if <attr> is a list, existing one of them is enough
             if all(not data.get(a, None) for a in attr):
-                response = {'message': f"you have to enter at least one of {attr}"}
-                requests.post(config["Site"]["host"] + '/create/callback', data=response)
-                return jsonify(response)
+                return {'message': f"you have to enter at least one of {attr}"}
 
         elif not data.get(attr, None):
-            response = {'message': f"<{attr}> is invalid"}
-            requests.post(config["Site"]["host"] + '/create/callback', data=response)
-            return jsonify(response)
+            return {'message': f"<{attr}> is invalid"}
 
 
 def clear_data(data: dict, exceptions=[]):
@@ -77,8 +73,10 @@ def get_user(data):
 
 def _create_channel():
     data = clear_data(dict(request.values))
-    if result := check_attributes(data, ['username', 'phone_number', 'channel_title']):
-        return result
+    if response := check_attributes(data, ['username', 'phone_number', 'channel_title']):
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
+        return jsonify(response)
 
     channel = Gap.create(
         package_id=data.get('package_id', None),
@@ -124,7 +122,7 @@ def _create_channel():
                 'bio': member.gap.bio
         }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -137,7 +135,7 @@ def _create_channel():
                 "severity": "danger"
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -147,8 +145,10 @@ def _create_channel():
 
 def _create_group():
     data = clear_data(dict(request.values))
-    if result := check_attributes(data, ['username', 'phone_number', 'group_title']):
-        return result
+    if response := check_attributes(data, ['username', 'phone_number', 'group_title']):
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
+        return jsonify(response)
 
     group = Gap.create(
         package_id=data.get('package_id', None),
@@ -192,7 +192,7 @@ def _create_group():
                 'bio': member.gap.bio
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -205,9 +205,8 @@ def _create_group():
                 "severity": "danger"
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
-
         return make_response(
             jsonify(response),
             500
@@ -216,8 +215,10 @@ def _create_group():
 
 def _create_both():
     data = clear_data(dict(request.values))
-    if result := check_attributes(data, ['username', 'phone_number', 'group_title', 'channel_title']):
-        return result
+    if response := check_attributes(data, ['username', 'phone_number', 'channel_title', 'group_title']):
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
+        return jsonify(response)
 
     channel = Gap.create(
         package_id=data.get('package_id', None),
@@ -296,7 +297,7 @@ def _create_both():
                 'severity': "info"
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -309,7 +310,7 @@ def _create_both():
                 "severity": "danger"
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -331,7 +332,8 @@ def create():
     task_type = data.get('task_type', None)
     if not task_type:
         response = {'message': 'Please enter task type!'}
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
         return jsonify(response)
 
 
@@ -346,15 +348,18 @@ def create():
 
     else:
         response = {"message": 'Please enter a valid task type!'}
-        requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
         return jsonify(response)
 
 
 @app.route("/add_user", methods=['GET', 'POST'])
 def add_user():
     data = clear_data(dict(request.values))
-    if result := check_attributes(data, ['username', 'phone_number', ['channel_id', 'group_id']]):
-        return result
+    if response := check_attributes(data, ['username', 'phone_number', ['channel_id', 'group_id']]):
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
+        return jsonify(response)
 
     if expire_date := data.get('expire_date', None):
         expire_date = dt.datetime.strptime(expire_date, '%d_%m_%Y').date()
@@ -376,7 +381,8 @@ def add_user():
                     "severity": "danger"
                 }
 
-                requests.post(config["Site"]["host"] + '/create/callback', data=response)
+                res = requests.post(config['General']['callback_url'], data=response)
+                response['callback_status'] = str(res.status_code)
                 return make_response(
                     jsonify(response),
                     500
@@ -415,7 +421,7 @@ def add_user():
             condition = condition or member.task.status == 'done'
 
     if condition:
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=done_response)
+        res = requests.post(config['General']['callback_url'], data=done_response)
         done_response[0] = res.status_code
         return make_response(
             jsonify(done_response),
@@ -428,7 +434,7 @@ def add_user():
                 "severity": "danger"
                 }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -491,7 +497,7 @@ def fetch_user():
     #         'signup_date': member.user.signup_date
     #     }
 
-    res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    res = requests.post(config['General']['callback_url'], data=response)
     response[0] = res.status_code
     return jsonify(response)
 
@@ -513,7 +519,7 @@ def fetch_gap():
     #         'is_group': member.gap.is_group
     #     }
 
-    res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+    res = requests.post(config['General']['callback_url'], data=response)
     response[0] = res.status_code
     return jsonify(response)
 
@@ -521,8 +527,10 @@ def fetch_gap():
 @app.route('/verify', methods=['GET', 'POST'])
 def verify():
     data = clear_data(dict(request.values))
-    if result := check_attributes(data, ['phone_number', 'code']):
-        return result
+    if response := check_attributes(data, ['phone_number', 'code']):
+        res = requests.post(config['General']['callback_url'], data=response)
+        response['callback_status'] = str(res.status_code)
+        return jsonify(response)
 
     user = get_user(data)
 
@@ -552,7 +560,7 @@ def verify():
                 'code': verify.code
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
@@ -565,7 +573,7 @@ def verify():
                 "severity": "danger"
             }
 
-        res = requests.post(config["Site"]["host"] + '/create/callback', data=response)
+        res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
         return make_response(
             jsonify(response),
