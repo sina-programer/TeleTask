@@ -21,7 +21,7 @@ def check_attributes(data: dict, attrs):
     """
     This function check that all necessary attributes there are in data
 
-    NOTE: if you want to check that there are at least one of some attrs, you can send they in a list.  for example:
+    NOTE: if you want to check that there are at least one of some attrs, you can send them in a list.  for example:
     check_attributes(data, ['first_necessary', ['second_optional1', 'second_optional2'], 'third_necessary'])
     but, must there is at least one of ['second_optional1', 'second_optional2']
     """
@@ -112,14 +112,14 @@ def _create_channel():
 
     if member.task.status == 'done':
         response = {
-                'task_type': 1,
-                'message': '201 Channel created',
-                'severity': "info",
-                'package_id': member.gap.package_id,
-                'id': member.gap.telegram_id,
-                'link': member.gap.link,
-                'title': member.gap.title,
-                'bio': member.gap.bio
+            'task_type': 1,
+            'message': '201 Channel created',
+            'severity': "info",
+            'package_id': member.gap.package_id,
+            'id': member.gap.telegram_id,
+            'link': member.gap.link,
+            'title': member.gap.title,
+            'bio': member.gap.bio
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
@@ -131,9 +131,9 @@ def _create_channel():
 
     else:
         response = {
-                "message": '500 Channel not created',
-                "severity": "danger"
-            }
+            "message": '500 Channel not created',
+            "severity": "danger"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -182,15 +182,15 @@ def _create_group():
 
     if member.task.status == 'done':
         response = {
-                'task_type': 2,
-                'message': '201 Group created',
-                'severity': "info",
-                'package_id': member.gap.package_id,
-                'id': member.gap.telegram_id,
-                'link': member.gap.link,
-                'title': member.gap.title,
-                'bio': member.gap.bio
-            }
+            'task_type': 2,
+            'message': '201 Group created',
+            'severity': "info",
+            'package_id': member.gap.package_id,
+            'id': member.gap.telegram_id,
+            'link': member.gap.link,
+            'title': member.gap.title,
+            'bio': member.gap.bio
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -201,9 +201,9 @@ def _create_group():
 
     else:
         response = {
-                "message": '500 Group Not Created',
-                "severity": "danger"
-            }
+            "message": '500 Group Not Created',
+            "severity": "danger"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -283,19 +283,19 @@ def _create_both():
 
     if created_gaps:
         response = {
-                'task_type': 3,
-                'message': f'201 {created_gaps} created',
-                'package_id': channel_member.gap.package_id,
-                'channel_title': channel_member.gap.title,
-                'channel_id': channel_member.gap.telegram_id,
-                'channel_bio': channel_member.gap.bio,
-                'channel_link': channel_member.gap.link,
-                'group_id': group_member.gap.telegram_id,
-                'group_bio': group_member.gap.bio,
-                'group_title': group_member.gap.title,
-                'group_link': group_member.gap.link,
-                'severity': "info"
-            }
+            'task_type': 3,
+            'message': f'201 {created_gaps} created',
+            'package_id': channel_member.gap.package_id,
+            'channel_title': channel_member.gap.title,
+            'channel_id': channel_member.gap.telegram_id,
+            'channel_bio': channel_member.gap.bio,
+            'channel_link': channel_member.gap.link,
+            'group_id': group_member.gap.telegram_id,
+            'group_bio': group_member.gap.bio,
+            'group_title': group_member.gap.title,
+            'group_link': group_member.gap.link,
+            'severity': "info"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -306,9 +306,9 @@ def _create_both():
 
     else:
         response = {
-                "message": '500 Not Created',
-                "severity": "danger"
-            }
+            "message": '500 Not Created',
+            "severity": "danger"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -430,9 +430,9 @@ def add_user():
 
     else:
         response = {
-                "message": '500 User Could Not Be Added',
-                "severity": "danger"
-                }
+            "message": '500 User Could Not Be Added',
+            "severity": "danger"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -554,11 +554,11 @@ def verify():
 
     if verify.task.status == 'done':
         response = {
-                'task_type': 5,
-                'message': '201 User authenticated',
-                'phone_number': verify.user.phone_number,
-                'code': verify.code
-            }
+            'task_type': 5,
+            'message': '201 User authenticated',
+            'phone_number': verify.user.phone_number,
+            'code': verify.code
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
@@ -569,9 +569,9 @@ def verify():
 
     else:
         response = {
-                "message": '500 User Not Authenticated',
-                "severity": "danger"
-            }
+            "message": '500 User Not Authenticated',
+            "severity": "danger"
+        }
 
         res = requests.post(config['General']['callback_url'], data=response)
         response[0] = res.status_code
