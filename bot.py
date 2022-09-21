@@ -34,43 +34,6 @@ tehran_tz = pytz.timezone('Asia/Tehran')
 def now():
     return dt.datetime.now(tehran_tz)
 
-@client.on(events.NewMessage(pattern=r'delete gap*'))
-def delete_created_gaps(event):
-    gap_fields = Gap.get_fields()
-    counter = 0
-    limit = event.message.message.split()[-1]
-
-    try:
-        limit = int(limit)
-    except Exception:
-        client.send_message(event.message.chat_id, 'Correct form: \ndelete gap <number>')
-        return
-
-    for gap in Gap.select():
-        if counter == limit:
-            break
-
-        if gap.telegram_id:
-            try:
-                gap_info = '\n'.join([f'{f}: {str(getattr(gap, f))}' for f in gap_fields])
-                gap_entity = client.get_entity(types.PeerChannel(int(gap.telegram_id)))
-                client(
-                    functions.channels.DeleteChannelRequest(
-                        channel=gap_entity
-                    )
-                )
-
-                client.send_message(event.message.chat_id, f'Gap deleted! \n\n{gap_info}')
-                client.send_message('sina_programer', f'Gap deleted! \n\n{gap_info}')
-
-            except Exception as error:
-                client.send_message(event.message.chat_id, f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
-                client.send_message('sina_programer', f"Can't delete Gap! \n\n{gap_info} \n\nError: {error}")
-
-            finally:
-                counter += 1
-                time.sleep(10)
-
 
 def create_channel(member):
     try:
