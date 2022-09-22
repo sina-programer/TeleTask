@@ -123,7 +123,7 @@ def _create_channel():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -136,7 +136,7 @@ def _create_channel():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -193,7 +193,7 @@ def _create_group():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -206,7 +206,7 @@ def _create_group():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -298,7 +298,7 @@ def _create_both():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -311,7 +311,7 @@ def _create_both():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -422,7 +422,7 @@ def add_user():
 
     if condition:
         res = requests.post(config['General']['callback_url'], data=done_response)
-        done_response[0] = res.status_code
+        done_response['callback_status'] = res.status_code
         return make_response(
             jsonify(done_response),
             200
@@ -435,7 +435,7 @@ def add_user():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             500
@@ -561,7 +561,7 @@ def verify():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             201
@@ -574,7 +574,7 @@ def verify():
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
-        response[0] = res.status_code
+        response['callback_status'] = res.status_code
         return make_response(
             jsonify(response),
             500
