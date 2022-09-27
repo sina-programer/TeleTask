@@ -3,6 +3,7 @@ from telethon import TelegramClient, events, sync
 from telethon import functions, types
 
 import datetime as dt
+import schedule
 import logging
 import time
 import pytz
@@ -132,29 +133,41 @@ def verify_user(verify):
 
 
 
+def handle_new_task():
+    try:
+        for task in Task.select().where(Task.status == 'pending'):
+            member = Member.get(task=task)
+            if task.type == 1:
+                create_channel(member)
+
+            elif task.type == 2:
+                create_group(member)
+
+            elif task.type == 4:
+                add_user(member)
+
+            elif task.type == 5:
+                verify_user(Verify.get(task=task))
+
+    except Exception as error:
+        print(error)
+
+
+def handle_new_user():
+    try:
+        for user in User.select().where(User.telegram_id == None):
+            user_entity = client.get_entity(types.PeerUser(user.username))
+            User.update(telegram_id=user_entity.id).where(User.username == user.username).execute()
+
+    except Exception as error:
+        print(error)
+
+
+
 if __name__ == '__main__':
+    schedule.every(2).seconds.do(handle_new_task)
+    schedule.every().minute.do(handle_new_user)
+
     while True:
-        try:
-            for task in Task.select().where(Task.status == 'pending'):
-                member = Member.get(task=task)
-                if task.type == 1:
-                    create_channel(member)
-
-                elif task.type == 2:
-                    create_group(member)
-
-                elif task.type == 4:
-                    add_user(member)
-
-                elif task.type == 5:
-                    verify_user(Verify.get(task=task))
-
-            for user in User.select().where(User.telegram_id == None):  # set User.telegram_id for new users
-                user_entity = client.get_entity(types.PeerUser(user.username))
-                User.update(telegram_id=user_entity.id).where(User.username == user.username).execute()
-
-        except Exception as error:
-            print(error)
-
-        finally:
-            time.sleep(3)
+        schedule.run_pending()
+        time.sleep(1)

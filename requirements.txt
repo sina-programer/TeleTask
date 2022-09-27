@@ -3,3 +3,4 @@ flask
 peewee
 requests
 pytz
+schedule
