@@ -163,10 +163,24 @@ def handle_new_user():
         print(error)
 
 
+def handle_expired_users():
+    try:
+        for member in Member.select():
+            if member.expire_date == dt.date.today():
+                gap = client.get_entity(types.PeerChannel(int(member.gap.id)))
+                user = client.get_entity(types.PeerUser(member.user.username))
+
+                client.kick_participant(gap, user)
+
+    except Exception as error:
+        print(error)
+
+
 
 if __name__ == '__main__':
     schedule.every(2).seconds.do(handle_new_task)
     schedule.every().minute.do(handle_new_user)
+    schedule.every().day.at('06:00').do(handle_expired_users)
 
     while True:
         schedule.run_pending()
