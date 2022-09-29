@@ -166,7 +166,7 @@ def handle_new_user():
 def handle_expired_users():
     try:
         for member in Member.select():
-            if member.expire_date == dt.date.today():
+            if member.expire_date == now().date():
                 gap = client.get_entity(types.PeerChannel(int(member.gap.id)))
                 user = client.get_entity(types.PeerUser(member.user.username))
 
