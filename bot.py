@@ -30,10 +30,10 @@ client.start()
 
 logging.debug(f'is user authorized: {client.is_user_authorized()}')
 
-tehran_tz = pytz.timezone('Asia/Tehran')
+TEHRAN_TZ = pytz.timezone('Asia/Tehran')
 
 def now():
-    return dt.datetime.now(tehran_tz)
+    return dt.datetime.now(TEHRAN_TZ)
 
 
 def create_channel(member):
@@ -180,7 +180,7 @@ def handle_expired_users():
 if __name__ == '__main__':
     schedule.every(2).seconds.do(handle_new_task)
     schedule.every().minute.do(handle_new_user)
-    schedule.every().day.at('06:00').do(handle_expired_users)
+    schedule.every().day.at('06:00', TEHRAN_TZ).do(handle_expired_users)
 
     while True:
         schedule.run_pending()
