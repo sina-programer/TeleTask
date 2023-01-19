@@ -18,7 +18,8 @@ config.read('config.ini')
 logging.basicConfig(
     format='%(asctime)s - %(lineno)d - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d:%H:%M:%S',
-    level=logging.DEBUG
+    level=logging.DEBUG,
+    filename='report_bot.log',
 )
 
 client = TelegramClient(
