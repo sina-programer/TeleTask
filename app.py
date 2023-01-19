@@ -3,6 +3,7 @@ import datetime as dt
 import requests
 import time
 import pytz
+import re
 
 from database import User, Task, Gap, Member, Verify 
 
@@ -37,17 +38,15 @@ def check_attributes(data: dict, attrs):
 
 def clear_data(data: dict, exceptions=[]):
     funcs = {
-        'phone_number': lambda x: x.replace('+', '').replace('"', '').strip(),
-        'username': lambda x: x.replace('@', '').replace('"', '').strip(),
-        'general_str': lambda x: x.replace('"', '').strip()
+        'phone_number': '|'.join(map(re.escape, ['+', '"'])),
+        'username': '|'.join(map(re.escape, ['@', '"'])),
+        'general_str': '|'.join(map(re.escape, ['"']))
     }
 
     for key in data:
         if key not in exceptions:
-            if key in funcs:
-                data[key] = funcs[key](data[key])
-            else:
-                data[key] = funcs['general_str'](data[key])
+            pattern = funcs.get(key, '"')
+            data[key] = ''.join(re.split(pattern, data[key]))
 
     return data
 

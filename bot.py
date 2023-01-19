@@ -186,6 +186,7 @@ if __name__ == '__main__':
     schedule.every(2).seconds.do(handle_new_task)
     schedule.every().hour.do(handle_new_user)
     schedule.every().day.at(to_server('06:00', '%H:%M')).do(handle_expired_users)
+    print('The bot has started!')
 
     while True:
         schedule.run_pending()
