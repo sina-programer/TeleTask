@@ -115,10 +115,10 @@ def _create_channel():
             'message': '201 Channel created',
             'severity': "info",
             'package_id': member.gap.package_id,
-            'id': member.gap.telegram_id,
-            'link': member.gap.link,
-            'title': member.gap.title,
-            'bio': member.gap.bio
+            'channel_id': member.gap.telegram_id,
+            'channel_link': member.gap.link,
+            'channel_title': member.gap.title,
+            'channel_bio': member.gap.bio
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
@@ -185,10 +185,10 @@ def _create_group():
             'message': '201 Group created',
             'severity': "info",
             'package_id': member.gap.package_id,
-            'id': member.gap.telegram_id,
-            'link': member.gap.link,
-            'title': member.gap.title,
-            'bio': member.gap.bio
+            'group_id': member.gap.telegram_id,
+            'group_link': member.gap.link,
+            'group_title': member.gap.title,
+            'group_bio': member.gap.bio
         }
 
         res = requests.post(config['General']['callback_url'], data=response)
